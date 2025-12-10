@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Football Field with Football Image</title>
+  <style>
+    body {
+      background: #20252b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+#scoreboard {
+  position: absolute;
+  top: 20px;
+  display: flex;
+  gap: 80px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+}
+
+#scoreboard .team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#scoreboard select {
+  font-size: 18px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+.score {
+  margin-top: 8px;
+  width: 60px;
+  text-align: center;
+  font-size: 24px;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+    canvas {
+      border: 4px solid #ffffff;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+      background: #0b5c1b;
+    }
+  </style>
+</head>
+<body>
+
+<div id="scoreboard">
+  <div class="team">
+    <label>Team 1</label>
+    <select id="team1">
+      <option value="">Select team...</option>
+      <option>Bills</option>
+      <option>Dolphins</option>
+      <option>Jets</option>
+      <option>Patriots</option>
+      <option>Ravens</option>
+      <option>Bengals</option>
+      <option>Browns</option>
+      <option>Steelers</option>
+      <option>Texans</option>
+      <option>Colts</option>
+      <option>Jaguars</option>
+      <option>Titans</option>
+      <option>Chiefs</option>
+      <option>Broncos</option>
+      <option>Raiders</option>
+      <option>Chargers</option>
+      <option>Cowboys</option>
+      <option>Giants</option>
+      <option>Eagles</option>
+      <option>Commanders</option>
+      <option>Lions</option>
+      <option>Packers</option>
+      <option>Bears</option>
+      <option>Vikings</option>
+      <option>Buccaneers</option>
+      <option>Saints</option>
+      <option>Falcons</option>
+      <option>Panthers</option>
+      <option>49ers</option>
+      <option>Seahawks</option>
+      <option>Rams</option>
+      <option>Cardinals</option>
+    </select>
+
+    <input type="text" id="score1" class="score" value="0">
+  </div>
+
+  <div class="team">
+    <label>Team 2</label>
+    <select id="team2">
+      <option value="">Select team...</option>
+      <!-- same list as above -->
+      <option>Bills</option>
+      <option>Dolphins</option>
+      <option>Jets</option>
+      <option>Patriots</option>
+      <option>Ravens</option>
+      <option>Bengals</option>
+      <option>Browns</option>
+      <option>Steelers</option>
+      <option>Texans</option>
+      <option>Colts</option>
+      <option>Jaguars</option>
+      <option>Titans</option>
+      <option>Chiefs</option>
+      <option>Broncos</option>
+      <option>Raiders</option>
+      <option>Chargers</option>
+      <option>Cowboys</option>
+      <option>Giants</option>
+      <option>Eagles</option>
+      <option>Commanders</option>
+      <option>Lions</option>
+      <option>Packers</option>
+      <option>Bears</option>
+      <option>Vikings</option>
+      <option>Buccaneers</option>
+      <option>Saints</option>
+      <option>Falcons</option>
+      <option>Panthers</option>
+      <option>49ers</option>
+      <option>Seahawks</option>
+      <option>Rams</option>
+      <option>Cardinals</option>
+    </select>
+
+    <input type="text" id="score2" class="score" value="0">
+  </div>
+</div>
+
+  <canvas id="field" width="1000" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("field");
+    const ctx = canvas.getContext("2d");
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    const TOTAL_YARDS = 120;
+    const ENDZONE = 10;
+    const PLAY_START = ENDZONE;
+    const PLAY_END = TOTAL_YARDS - ENDZONE;
+    const P = W / TOTAL_YARDS;
+
+    // Load the football image
+    const footballImg = new Image();
+    footballImg.src = "football_clean.png";
+
+    let ballYard = 35; // starting on the 25-yard line
+
+    function xOf(yard) {
+      return yard * P;
+    }
+
+    // ---------------------------
+    // FIELD DRAWING
+    // ---------------------------
+    function drawBackground() {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#166b24");
+      g.addColorStop(0.5, "#0b5c1b");
+      g.addColorStop(1, "#166b24");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+
+      for (let y = PLAY_START; y < PLAY_END; y += 5) {
+        if (((y - PLAY_START) / 5) % 2 === 0) continue;
+        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.fillRect(xOf(y), 0, 5 * P, H);
+      }
+    }
+
+    function drawEndzones() {
+      ctx.fillStyle = "#003366";
+      ctx.fillRect(xOf(0), 0, ENDZONE * P, H);
+
+      ctx.fillStyle = "#660000";
+      ctx.fillRect(xOf(PLAY_END), 0, ENDZONE * P, H);
+    }
+
+    function drawBoundaries() {
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(W, 0);
+      ctx.moveTo(0, H);
+      ctx.lineTo(W, H);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(xOf(PLAY_START), 0);
+      ctx.lineTo(xOf(PLAY_START), H);
+      ctx.moveTo(xOf(PLAY_END), 0);
+      ctx.lineTo(xOf(PLAY_END), H);
+      ctx.stroke();
+    }
+
+    function drawYardLines() {
+      ctx.strokeStyle = "#ffffff";
+
+      for (let y = PLAY_START; y <= PLAY_END; y += 5) {
+        ctx.beginPath();
+        ctx.lineWidth = ((y - PLAY_START) % 10 === 0) ? 2.5 : 1;
+        ctx.moveTo(xOf(y), 0);
+        ctx.lineTo(xOf(y), H);
+        ctx.stroke();
+      }
+    }
+
+    function drawHashMarks() {
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1;
+
+      const topY1 = H * 0.32;
+      const topY2 = topY1 + 6;
+      const botY1 = H * 0.68;
+      const botY2 = botY1 - 6;
+
+      for (let y = PLAY_START + 1; y <= PLAY_END - 1; y++) {
+        const x = xOf(y);
+
+        ctx.beginPath();
+        ctx.moveTo(x, topY1);
+        ctx.lineTo(x, topY2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, botY1);
+        ctx.lineTo(x, botY2);
+        ctx.stroke();
+      }
+    }
+
+    function drawNumbers() {
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "26px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const topY = H * 0.18;
+      const bottomY = H * 0.82;
+
+      for (let n = 10; n <= 50; n += 10) {
+        const xl = xOf(PLAY_START + n);
+        const xr = xOf(PLAY_END - n);
+
+        ctx.fillText(n.toString(), xl, topY);
+        ctx.fillText(n.toString(), xr, topY);
+
+        ctx.save();
+        ctx.translate(xl, bottomY);
+        ctx.rotate(Math.PI);
+        ctx.fillText(n.toString(), 0, 0);
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(xr, bottomY);
+        ctx.rotate(Math.PI);
+        ctx.fillText(n.toString(), 0, 0);
+        ctx.restore();
+      }
+    }
+
+    // ---------------------------
+    // FOOTBALL IMAGE DRAWING
+    // ---------------------------
+    function drawFootball() {
+      const x = xOf(ballYard);
+      const y = H / 2;
+
+      const BALL_WIDTH = 70;
+      const BALL_HEIGHT = 55;
+
+      if (footballImg.complete) {
+        ctx.drawImage(
+          footballImg,
+          x - BALL_WIDTH / 2,
+          y - BALL_HEIGHT / 2,
+          BALL_WIDTH,
+          BALL_HEIGHT
+        );
+      }
+    }
+
+    // ---------------------------
+    // MASTER DRAW FUNCTION
+    // ---------------------------
+    function drawField() {
+      drawBackground();
+      drawEndzones();
+      drawBoundaries();
+      drawYardLines();
+      drawHashMarks();
+      drawNumbers();
+      drawFootball();
+    }
+
+    // ---------------------------
+    // FIX: DRAW ONLY AFTER IMAGE LOADS
+    // ---------------------------
+    footballImg.onload = () => {
+      drawField();
+    };
+
+    // If cached, draw immediately
+    if (footballImg.complete) {
+      drawField();
+    }
+
+    // If cached, draw immediately
+    if (footballImg.complete) {
+      drawField();
+    }
+
+    // ===========================
+    // ARROW KEY MOVEMENT HERE
+    // ===========================
+    document.addEventListener("keydown", (e) => {
+      let step = e.shiftKey ? 10 : 1;  // Shift moves 10 yards
+
+      if (e.key === "ArrowLeft") {
+        ballYard = Math.max(0, ballYard - step);
+        drawField();
+      }
+
+      if (e.key === "ArrowRight") {
+        ballYard = Math.min(120, ballYard + step);
+        drawField();
+      }
+    });
+
+  </script>
+</body>
+</html>
