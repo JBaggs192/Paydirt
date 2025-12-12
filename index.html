@@ -2,20 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Football Field Game</title>
+  <title>Baggaley Football League</title>
 
   <style>
     body {
       background: #20252b;
       margin: 0;
       font-family: Arial, sans-serif;
+      color: white;
     }
 
     #game-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 20px;
+      padding-top: 16px;
+    }
+
+    #league-title {
+      font-size: 38px;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+      text-align: center;
     }
 
     #scoreboard {
@@ -27,7 +36,6 @@
       border: 3px solid white;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.35);
-      color: white;
       box-shadow: 0 0 18px rgba(0,0,0,0.6);
     }
 
@@ -76,12 +84,13 @@
 <body>
 
 <div id="game-container">
+  <div id="league-title">Baggaley Football League</div>
+
   <div id="scoreboard">
     <div class="team">
       <select id="team1" class="team-select"></select>
       <input type="number" id="score1" class="score" value="0">
     </div>
-
     <div class="team">
       <select id="team2" class="team-select"></select>
       <input type="number" id="score2" class="score" value="0">
@@ -93,7 +102,7 @@
 
 <script>
 /* ===========================
-   TEAM COLORS (3-COLOR SYSTEM)
+   TEAM COLORS
    =========================== */
 const TEAM_COLORS = {
   "Arizona Cardinals": { bg:"#000000", text:"#97233F", outline:"#FFFFFF" },
@@ -145,21 +154,22 @@ const PLAY_START = ENDZONE;
 const PLAY_END = TOTAL_YARDS - ENDZONE;
 const P = W / TOTAL_YARDS;
 
+const MIDFIELD_YARD = 60;
+const LOGO_WIDTH_YARDS = 10;
+
 const footballImg = new Image();
 footballImg.src = "football_clean.png";
+
+const bflLogo = new Image();
+bflLogo.src = "BFL_logo.png";
 
 let ballYard = 35;
 
 /* ===========================
    HELPERS
    =========================== */
-function xOf(yard) {
-  return yard * P;
-}
-
-function getMascot(team) {
-  return team ? team.split(" ").pop().toUpperCase() : "";
-}
+const xOf = yard => yard * P;
+const getMascot = team => team ? team.split(" ").pop().toUpperCase() : "";
 
 /* ===========================
    FIELD DRAWING
@@ -171,6 +181,28 @@ function drawBackground() {
   g.addColorStop(1, "#166b24");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
+
+  for (let y = PLAY_START; y < PLAY_END; y += 5) {
+    if (((y - PLAY_START) / 5) % 2 === 0) continue;
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.fillRect(xOf(y), 0, 5 * P, H);
+  }
+}
+
+function drawMidfieldLogo() {
+  if (!bflLogo.complete || !bflLogo.naturalWidth) return;
+
+  const logoW = LOGO_WIDTH_YARDS * P;
+  const aspect = bflLogo.naturalHeight / bflLogo.naturalWidth;
+  const logoH = logoW * aspect;
+
+  const x = Math.round(xOf(MIDFIELD_YARD) - logoW / 2);
+  const y = Math.round(H / 2 - logoH / 2);
+
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.drawImage(bflLogo, x, y, logoW, logoH);
+  ctx.restore();
 }
 
 function drawEndzone(team, centerX, rotation) {
@@ -187,9 +219,9 @@ function drawEndzone(team, centerX, rotation) {
   ctx.font = "bold 40px Arial Black";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-
   ctx.lineJoin = "round";
   ctx.lineWidth = 4;
+
   ctx.strokeStyle = outline;
   ctx.strokeText(getMascot(team), 0, 0);
 
@@ -216,7 +248,7 @@ function drawYardLines() {
   ctx.strokeStyle = "white";
   for (let y = PLAY_START; y <= PLAY_END; y += 5) {
     ctx.beginPath();
-    ctx.lineWidth = (y % 10 === 0) ? 2.5 : 1;
+    ctx.lineWidth = ((y - PLAY_START) % 10 === 0) ? 2.5 : 1;
     ctx.moveTo(xOf(y), 0);
     ctx.lineTo(xOf(y), H);
     ctx.stroke();
@@ -271,11 +303,12 @@ function drawNumbers() {
 }
 
 function drawFootball() {
+  if (!footballImg.complete) return;
   ctx.drawImage(footballImg, xOf(ballYard) - 25, H / 2 - 27, 50, 55);
 }
 
 /* ===========================
-   MASTER DRAW
+   MASTER DRAW (FIXED ORDER)
    =========================== */
 function drawField() {
   drawBackground();
@@ -285,6 +318,7 @@ function drawField() {
   drawYardLines();
   drawHashMarks();
   drawNumbers();
+  drawMidfieldLogo(); // logo on top of 50-yard line
   drawFootball();
 }
 
@@ -308,7 +342,11 @@ document.addEventListener("keydown", e => {
   drawField();
 });
 
-footballImg.onload = drawField;
+function tryInitialDraw() {
+  if (footballImg.complete && bflLogo.complete) drawField();
+}
+footballImg.onload = tryInitialDraw;
+bflLogo.onload = tryInitialDraw;
 </script>
 
 </body>
