@@ -2,351 +2,314 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Football Field with Football Image</title>
+  <title>Football Field Game</title>
+
   <style>
     body {
       background: #20252b;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
     }
 
-#scoreboard {
-  position: absolute;
-  top: 20px;
-  display: flex;
-  gap: 80px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  color: white;
-  font-family: Arial, sans-serif;
-  font-size: 20px;
-}
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
 
-#scoreboard .team {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    #scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 140px;
+      padding: 14px 40px;
+      margin-bottom: 20px;
+      border: 3px solid white;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      color: white;
+      box-shadow: 0 0 18px rgba(0,0,0,0.6);
+    }
 
-#scoreboard select {
-  font-size: 18px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  margin-top: 5px;
-}
+    .team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 260px;
+    }
 
-.score {
-  margin-top: 8px;
-  width: 60px;
-  text-align: center;
-  font-size: 24px;
-  padding: 4px;
-  border-radius: 6px;
-}
+    .team-select {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      appearance: none;
+    }
+
+    .team-select option {
+      background-color: #20252b;
+      color: white;
+    }
+
+    .score {
+      margin-top: 8px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 42px;
+      font-weight: bold;
+      text-align: center;
+      width: 80px;
+    }
 
     canvas {
-      border: 4px solid #ffffff;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+      border: 4px solid white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
       background: #0b5c1b;
     }
   </style>
 </head>
+
 <body>
 
-<div id="scoreboard">
-  <div class="team">
-    <label>Team 1</label>
-    <select id="team1">
-      <option value="">Select team...</option>
-      <option>Bills</option>
-      <option>Dolphins</option>
-      <option>Jets</option>
-      <option>Patriots</option>
-      <option>Ravens</option>
-      <option>Bengals</option>
-      <option>Browns</option>
-      <option>Steelers</option>
-      <option>Texans</option>
-      <option>Colts</option>
-      <option>Jaguars</option>
-      <option>Titans</option>
-      <option>Chiefs</option>
-      <option>Broncos</option>
-      <option>Raiders</option>
-      <option>Chargers</option>
-      <option>Cowboys</option>
-      <option>Giants</option>
-      <option>Eagles</option>
-      <option>Commanders</option>
-      <option>Lions</option>
-      <option>Packers</option>
-      <option>Bears</option>
-      <option>Vikings</option>
-      <option>Buccaneers</option>
-      <option>Saints</option>
-      <option>Falcons</option>
-      <option>Panthers</option>
-      <option>49ers</option>
-      <option>Seahawks</option>
-      <option>Rams</option>
-      <option>Cardinals</option>
-    </select>
+<div id="game-container">
+  <div id="scoreboard">
+    <div class="team">
+      <select id="team1" class="team-select"></select>
+      <input type="number" id="score1" class="score" value="0">
+    </div>
 
-    <input type="text" id="score1" class="score" value="0">
+    <div class="team">
+      <select id="team2" class="team-select"></select>
+      <input type="number" id="score2" class="score" value="0">
+    </div>
   </div>
-
-  <div class="team">
-    <label>Team 2</label>
-    <select id="team2">
-      <option value="">Select team...</option>
-      <!-- same list as above -->
-      <option>Bills</option>
-      <option>Dolphins</option>
-      <option>Jets</option>
-      <option>Patriots</option>
-      <option>Ravens</option>
-      <option>Bengals</option>
-      <option>Browns</option>
-      <option>Steelers</option>
-      <option>Texans</option>
-      <option>Colts</option>
-      <option>Jaguars</option>
-      <option>Titans</option>
-      <option>Chiefs</option>
-      <option>Broncos</option>
-      <option>Raiders</option>
-      <option>Chargers</option>
-      <option>Cowboys</option>
-      <option>Giants</option>
-      <option>Eagles</option>
-      <option>Commanders</option>
-      <option>Lions</option>
-      <option>Packers</option>
-      <option>Bears</option>
-      <option>Vikings</option>
-      <option>Buccaneers</option>
-      <option>Saints</option>
-      <option>Falcons</option>
-      <option>Panthers</option>
-      <option>49ers</option>
-      <option>Seahawks</option>
-      <option>Rams</option>
-      <option>Cardinals</option>
-    </select>
-
-    <input type="text" id="score2" class="score" value="0">
-  </div>
-</div>
 
   <canvas id="field" width="1000" height="400"></canvas>
+</div>
 
-  <script>
-    const canvas = document.getElementById("field");
-    const ctx = canvas.getContext("2d");
+<script>
+/* ===========================
+   TEAM COLORS (3-COLOR SYSTEM)
+   =========================== */
+const TEAM_COLORS = {
+  "Arizona Cardinals": { bg:"#000000", text:"#97233F", outline:"#FFFFFF" },
+  "Atlanta Falcons": { bg:"#000000", text:"#A71930", outline:"#C7C9CB" },
+  "Baltimore Ravens": { bg:"#000000", text:"#241773", outline:"#9E7C0C" },
+  "Buffalo Bills": { bg:"#00338D", text:"#C60C30", outline:"#FFFFFF" },
+  "Carolina Panthers": { bg:"#000000", text:"#0085CA", outline:"#BFC0BF" },
+  "Chicago Bears": { bg:"#0B162A", text:"#C83803", outline:"#FFFFFF" },
+  "Cincinnati Bengals": { bg:"#000000", text:"#FB4F14", outline:"#FFFFFF" },
+  "Cleveland Browns": { bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF" },
+  "Dallas Cowboys": { bg:"#002244", text:"#869397", outline:"#FFFFFF" },
+  "Denver Broncos": { bg:"#002244", text:"#FB4F14", outline:"#FFFFFF" },
+  "Detroit Lions": { bg:"#0076B6", text:"#B0B7BC", outline:"#000000" },
+  "Green Bay Packers": { bg:"#203731", text:"#FFB612", outline:"#FFFFFF" },
+  "Houston Texans": { bg:"#021018", text:"#A71930", outline:"#FFFFFF" },
+  "Indianapolis Colts": { bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF" },
+  "Jacksonville Jaguars": { bg:"#000000", text:"#006778", outline:"#D7A22A" },
+  "Kansas City Chiefs": { bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF" },
+  "Las Vegas Raiders": { bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF" },
+  "Los Angeles Chargers": { bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF" },
+  "Los Angeles Rams": { bg:"#003594", text:"#FFA300", outline:"#FFFFFF" },
+  "Miami Dolphins": { bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF" },
+  "Minnesota Vikings": { bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF" },
+  "New England Patriots": { bg:"#002244", text:"#C60C30", outline:"#B0B7BC" },
+  "New Orleans Saints": { bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF" },
+  "New York Giants": { bg:"#0B2265", text:"#A71930", outline:"#FFFFFF" },
+  "New York Jets": { bg:"#115740", text:"#FFFFFF", outline:"#000000" },
+  "Philadelphia Eagles": { bg:"#004851", text:"#A5ACAF", outline:"#000000" },
+  "Pittsburgh Steelers": { bg:"#000000", text:"#FFB612", outline:"#FFFFFF" },
+  "San Francisco 49ers": { bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF" },
+  "Seattle Seahawks": { bg:"#002244", text:"#69BE28", outline:"#A5ACAF" },
+  "Tampa Bay Buccaneers": { bg:"#A71930", text:"#34302B", outline:"#FFFFFF" },
+  "Tennessee Titans": { bg:"#002244", text:"#4B92DB", outline:"#C60C30" },
+  "Washington Commanders": { bg:"#5A1414", text:"#FFB612", outline:"#000000" }
+};
 
-    const W = canvas.width;
-    const H = canvas.height;
+/* ===========================
+   CANVAS SETUP
+   =========================== */
+const canvas = document.getElementById("field");
+const ctx = canvas.getContext("2d");
 
-    const TOTAL_YARDS = 120;
-    const ENDZONE = 10;
-    const PLAY_START = ENDZONE;
-    const PLAY_END = TOTAL_YARDS - ENDZONE;
-    const P = W / TOTAL_YARDS;
+const W = canvas.width;
+const H = canvas.height;
 
-    // Load the football image
-    const footballImg = new Image();
-    footballImg.src = "football_clean.png";
+const TOTAL_YARDS = 120;
+const ENDZONE = 10;
+const PLAY_START = ENDZONE;
+const PLAY_END = TOTAL_YARDS - ENDZONE;
+const P = W / TOTAL_YARDS;
 
-    let ballYard = 35; // starting on the 25-yard line
+const footballImg = new Image();
+footballImg.src = "football_clean.png";
 
-    function xOf(yard) {
-      return yard * P;
-    }
+let ballYard = 35;
 
-    // ---------------------------
-    // FIELD DRAWING
-    // ---------------------------
-    function drawBackground() {
-      const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, "#166b24");
-      g.addColorStop(0.5, "#0b5c1b");
-      g.addColorStop(1, "#166b24");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
+/* ===========================
+   HELPERS
+   =========================== */
+function xOf(yard) {
+  return yard * P;
+}
 
-      for (let y = PLAY_START; y < PLAY_END; y += 5) {
-        if (((y - PLAY_START) / 5) % 2 === 0) continue;
-        ctx.fillStyle = "rgba(255,255,255,0.06)";
-        ctx.fillRect(xOf(y), 0, 5 * P, H);
-      }
-    }
+function getMascot(team) {
+  return team ? team.split(" ").pop().toUpperCase() : "";
+}
 
-    function drawEndzones() {
-      ctx.fillStyle = "#003366";
-      ctx.fillRect(xOf(0), 0, ENDZONE * P, H);
+/* ===========================
+   FIELD DRAWING
+   =========================== */
+function drawBackground() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#166b24");
+  g.addColorStop(0.5, "#0b5c1b");
+  g.addColorStop(1, "#166b24");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
 
-      ctx.fillStyle = "#660000";
-      ctx.fillRect(xOf(PLAY_END), 0, ENDZONE * P, H);
-    }
+function drawEndzone(team, centerX, rotation) {
+  if (!team) return;
+  const { bg, text, outline } = TEAM_COLORS[team];
 
-    function drawBoundaries() {
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4;
+  ctx.fillStyle = bg;
+  ctx.fillRect(centerX - (ENDZONE * P) / 2, 0, ENDZONE * P, H);
 
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(W, 0);
-      ctx.moveTo(0, H);
-      ctx.lineTo(W, H);
-      ctx.stroke();
+  ctx.save();
+  ctx.translate(centerX, H / 2);
+  ctx.rotate(rotation);
 
-      ctx.beginPath();
-      ctx.moveTo(xOf(PLAY_START), 0);
-      ctx.lineTo(xOf(PLAY_START), H);
-      ctx.moveTo(xOf(PLAY_END), 0);
-      ctx.lineTo(xOf(PLAY_END), H);
-      ctx.stroke();
-    }
+  ctx.font = "bold 40px Arial Black";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-    function drawYardLines() {
-      ctx.strokeStyle = "#ffffff";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = outline;
+  ctx.strokeText(getMascot(team), 0, 0);
 
-      for (let y = PLAY_START; y <= PLAY_END; y += 5) {
-        ctx.beginPath();
-        ctx.lineWidth = ((y - PLAY_START) % 10 === 0) ? 2.5 : 1;
-        ctx.moveTo(xOf(y), 0);
-        ctx.lineTo(xOf(y), H);
-        ctx.stroke();
-      }
-    }
+  ctx.fillStyle = text;
+  ctx.fillText(getMascot(team), 0, 0);
 
-    function drawHashMarks() {
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 1;
+  ctx.restore();
+}
 
-      const topY1 = H * 0.32;
-      const topY2 = topY1 + 6;
-      const botY1 = H * 0.68;
-      const botY2 = botY1 - 6;
+function drawBoundaries() {
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(0, 0, W, H);
 
-      for (let y = PLAY_START + 1; y <= PLAY_END - 1; y++) {
-        const x = xOf(y);
+  ctx.beginPath();
+  ctx.moveTo(xOf(PLAY_START), 0);
+  ctx.lineTo(xOf(PLAY_START), H);
+  ctx.moveTo(xOf(PLAY_END), 0);
+  ctx.lineTo(xOf(PLAY_END), H);
+  ctx.stroke();
+}
 
-        ctx.beginPath();
-        ctx.moveTo(x, topY1);
-        ctx.lineTo(x, topY2);
-        ctx.stroke();
+function drawYardLines() {
+  ctx.strokeStyle = "white";
+  for (let y = PLAY_START; y <= PLAY_END; y += 5) {
+    ctx.beginPath();
+    ctx.lineWidth = (y % 10 === 0) ? 2.5 : 1;
+    ctx.moveTo(xOf(y), 0);
+    ctx.lineTo(xOf(y), H);
+    ctx.stroke();
+  }
+}
 
-        ctx.beginPath();
-        ctx.moveTo(x, botY1);
-        ctx.lineTo(x, botY2);
-        ctx.stroke();
-      }
-    }
+function drawHashMarks() {
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 1;
+  const top = H * 0.32;
+  const bot = H * 0.68;
 
-    function drawNumbers() {
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "26px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+  for (let y = PLAY_START + 1; y < PLAY_END; y++) {
+    const x = xOf(y);
+    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, top + 6);
+    ctx.moveTo(x, bot);
+    ctx.lineTo(x, bot - 6);
+    ctx.stroke();
+  }
+}
 
-      const topY = H * 0.18;
-      const bottomY = H * 0.82;
+function drawNumbers() {
+  ctx.fillStyle = "white";
+  ctx.font = "26px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-      for (let n = 10; n <= 50; n += 10) {
-        const xl = xOf(PLAY_START + n);
-        const xr = xOf(PLAY_END - n);
+  const topY = H * 0.18;
+  const bottomY = H * 0.82;
 
-        ctx.fillText(n.toString(), xl, topY);
-        ctx.fillText(n.toString(), xr, topY);
+  for (let n = 10; n <= 50; n += 10) {
+    const leftX = xOf(PLAY_START + n);
+    const rightX = xOf(PLAY_END - n);
 
-        ctx.save();
-        ctx.translate(xl, bottomY);
-        ctx.rotate(Math.PI);
-        ctx.fillText(n.toString(), 0, 0);
-        ctx.restore();
+    ctx.fillText(n, leftX, topY);
+    ctx.fillText(n, rightX, topY);
 
-        ctx.save();
-        ctx.translate(xr, bottomY);
-        ctx.rotate(Math.PI);
-        ctx.fillText(n.toString(), 0, 0);
-        ctx.restore();
-      }
-    }
+    ctx.save();
+    ctx.translate(leftX, bottomY);
+    ctx.rotate(Math.PI);
+    ctx.fillText(n, 0, 0);
+    ctx.restore();
 
-    // ---------------------------
-    // FOOTBALL IMAGE DRAWING
-    // ---------------------------
-    function drawFootball() {
-      const x = xOf(ballYard);
-      const y = H / 2;
+    ctx.save();
+    ctx.translate(rightX, bottomY);
+    ctx.rotate(Math.PI);
+    ctx.fillText(n, 0, 0);
+    ctx.restore();
+  }
+}
 
-      const BALL_WIDTH = 70;
-      const BALL_HEIGHT = 55;
+function drawFootball() {
+  ctx.drawImage(footballImg, xOf(ballYard) - 25, H / 2 - 27, 50, 55);
+}
 
-      if (footballImg.complete) {
-        ctx.drawImage(
-          footballImg,
-          x - BALL_WIDTH / 2,
-          y - BALL_HEIGHT / 2,
-          BALL_WIDTH,
-          BALL_HEIGHT
-        );
-      }
-    }
+/* ===========================
+   MASTER DRAW
+   =========================== */
+function drawField() {
+  drawBackground();
+  drawEndzone(team1.value, xOf(ENDZONE / 2), -Math.PI / 2);
+  drawEndzone(team2.value, xOf(PLAY_END + ENDZONE / 2), Math.PI / 2);
+  drawBoundaries();
+  drawYardLines();
+  drawHashMarks();
+  drawNumbers();
+  drawFootball();
+}
 
-    // ---------------------------
-    // MASTER DRAW FUNCTION
-    // ---------------------------
-    function drawField() {
-      drawBackground();
-      drawEndzones();
-      drawBoundaries();
-      drawYardLines();
-      drawHashMarks();
-      drawNumbers();
-      drawFootball();
-    }
+/* ===========================
+   UI
+   =========================== */
+const team1 = document.getElementById("team1");
+const team2 = document.getElementById("team2");
 
-    // ---------------------------
-    // FIX: DRAW ONLY AFTER IMAGE LOADS
-    // ---------------------------
-    footballImg.onload = () => {
-      drawField();
-    };
+Object.keys(TEAM_COLORS).forEach(t => {
+  team1.add(new Option(t, t));
+  team2.add(new Option(t, t));
+});
 
-    // If cached, draw immediately
-    if (footballImg.complete) {
-      drawField();
-    }
+team1.onchange = team2.onchange = drawField;
 
-    // If cached, draw immediately
-    if (footballImg.complete) {
-      drawField();
-    }
+document.addEventListener("keydown", e => {
+  const step = e.shiftKey ? 10 : 1;
+  if (e.key === "ArrowLeft") ballYard = Math.max(0, ballYard - step);
+  if (e.key === "ArrowRight") ballYard = Math.min(120, ballYard + step);
+  drawField();
+});
 
-    // ===========================
-    // ARROW KEY MOVEMENT HERE
-    // ===========================
-    document.addEventListener("keydown", (e) => {
-      let step = e.shiftKey ? 10 : 1;  // Shift moves 10 yards
+footballImg.onload = drawField;
+</script>
 
-      if (e.key === "ArrowLeft") {
-        ballYard = Math.max(0, ballYard - step);
-        drawField();
-      }
-
-      if (e.key === "ArrowRight") {
-        ballYard = Math.min(120, ballYard + step);
-        drawField();
-      }
-    });
-
-  </script>
 </body>
 </html>
