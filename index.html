@@ -78,6 +78,60 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
       background: #0b5c1b;
     }
+
+    #reset-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+#resetFirstDownBtn {
+  background: linear-gradient(180deg, #ffd400, #e6be00);
+  border: none;
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.4),
+    inset 0 -2px 0 rgba(0,0,0,0.25);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+#resetFirstDownBtn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 14px rgba(0,0,0,0.45),
+    inset 0 -2px 0 rgba(0,0,0,0.25);
+}
+
+#resetFirstDownBtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.4),
+    inset 0 2px 0 rgba(0,0,0,0.25);
+}
+
+.reset-subtext {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.5px;
+}
+
+.reset-subtext .key {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 2px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.35);
+  font-weight: bold;
+}
+
   </style>
 </head>
 
@@ -98,6 +152,15 @@
   </div>
 
   <canvas id="field" width="1000" height="400"></canvas>
+</div>
+
+<div id="reset-hint">
+  <button id="resetFirstDownBtn">
+    Reset 1st &amp; 10
+  </button>
+  <div class="reset-subtext">
+    Click here or press <span class="key">↑</span>
+  </div>
 </div>
 
 <script>
@@ -164,6 +227,10 @@ const bflLogo = new Image();
 bflLogo.src = "BFL_logo.png";
 
 let ballYard = 35;
+let firstDownYard = null;
+let posession = "team1";
+let down = 1;
+let toGo = 10;
 
 /* ===========================
    HELPERS
@@ -307,6 +374,38 @@ function drawFootball() {
   ctx.drawImage(footballImg, xOf(ballYard) - 25, H / 2 - 27, 50, 55);
 }
 
+function drawFirstDownLine() {
+  if (firstDownYard === null) return;
+
+  ctx.save();
+  ctx.strokeStyle = "#FFD400";
+  ctx.lineWidth = 4;
+  
+  const x = xOf(firstDownYard);
+  ctx.beginPath();
+  ctx.moveTo(x, 0);
+  ctx.lineTo(x, H);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function resetFirstDown() {
+  down = 1;
+  ToGo = 10;
+
+  if (posession === "team1") {
+    firstDownYard = (ballYard + toGo);
+  } else {
+    firstDownYard = (ballYard - toGo)
+  }
+  requestRedraw();
+}
+
+function requestRedraw() {
+  requestAnimationFrame(drawField)
+}
+
 /* ===========================
    MASTER DRAW (FIXED ORDER)
    =========================== */
@@ -318,8 +417,10 @@ function drawField() {
   drawYardLines();
   drawHashMarks();
   drawNumbers();
-  drawMidfieldLogo(); // logo on top of 50-yard line
+  drawMidfieldLogo();
+  drawFirstDownLine();
   drawFootball();
+  
 }
 
 /* ===========================
@@ -335,11 +436,32 @@ Object.keys(TEAM_COLORS).forEach(t => {
 
 team1.onchange = team2.onchange = drawField;
 
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", (e) => {
+  if (["ArrowLeft", "ArrowRight", "ArrowUp"].includes(e.key)) {
+    e.preventDefault();
+  }
+
   const step = e.shiftKey ? 10 : 1;
-  if (e.key === "ArrowLeft") ballYard = Math.max(0, ballYard - step);
-  if (e.key === "ArrowRight") ballYard = Math.min(120, ballYard + step);
-  drawField();
+  let didChange = false;
+
+  if (e.key === "ArrowLeft") {
+    ballYard = Math.max(0, ballYard - step);
+    didChange = true;
+  }
+
+  if (e.key === "ArrowRight") {
+    ballYard = Math.min(120, ballYard + step);
+    didChange = true;
+  }
+
+  if (e.key === "ArrowUp") {
+    resetFirstDown();
+    return;
+  }
+
+  if (didChange) {
+    requestRedraw();
+  }
 });
 
 function tryInitialDraw() {
@@ -347,6 +469,11 @@ function tryInitialDraw() {
 }
 footballImg.onload = tryInitialDraw;
 bflLogo.onload = tryInitialDraw;
+
+document
+  .getElementById("resetFirstDownBtn")
+  .addEventListener("click", resetFirstDown);
+
 </script>
 
 </body>
