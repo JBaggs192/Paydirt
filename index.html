@@ -132,6 +132,42 @@
   font-weight: bold;
 }
 
+/* ===========================
+   POSSESSION INDICATOR
+   =========================== */
+#possession-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+#possession-indicator .label {
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.85);
+}
+
+#possessionToggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.5);
+  color: white;
+  font-size: 15px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+#possessionToggle:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+#possessionToggle:active {
+  transform: translateY(1px);
+}
+
   </style>
 </head>
 
@@ -150,6 +186,13 @@
       <input type="number" id="score2" class="score" value="0">
     </div>
   </div>
+
+<div id="possession-indicator">
+  <span class="label">Possession:</span>
+  <button id="possessionToggle">
+    <span id="possessionTeam">Team 1</span>
+  </button>
+</div>
 
   <canvas id="field" width="1000" height="400"></canvas>
 </div>
@@ -228,7 +271,7 @@ bflLogo.src = "BFL_logo.png";
 
 let ballYard = 35;
 let firstDownYard = null;
-let posession = "team1";
+let possession = "team1";
 let down = 1;
 let toGo = 10;
 
@@ -394,7 +437,7 @@ function resetFirstDown() {
   down = 1;
   ToGo = 10;
 
-  if (posession === "team1") {
+  if (possession === "team1") {
     firstDownYard = (ballYard + toGo);
   } else {
     firstDownYard = (ballYard - toGo)
@@ -420,14 +463,13 @@ function drawField() {
   drawMidfieldLogo();
   drawFirstDownLine();
   drawFootball();
+  updatePossessionUI();
   
 }
 
 /* ===========================
    UI
    =========================== */
-const team1 = document.getElementById("team1");
-const team2 = document.getElementById("team2");
 
 Object.keys(TEAM_COLORS).forEach(t => {
   team1.add(new Option(t, t));
@@ -473,6 +515,48 @@ bflLogo.onload = tryInitialDraw;
 document
   .getElementById("resetFirstDownBtn")
   .addEventListener("click", resetFirstDown);
+
+
+  
+// ===========================
+// POSSESSION LOGIC
+// ===========================
+
+const team1Select = document.getElementById("team1");
+const team2Select = document.getElementById("team2");
+
+const possessionToggleBtn = document.getElementById("possessionToggle");
+const possessionTeamEl = document.getElementById("possessionTeam");
+
+function getActiveTeamName(teamKey) {
+  if (teamKey === "team1") return team1Select.value?.trim() || "Team 1";
+  return team2Select.value?.trim() || "Team 2";
+}
+
+function updatePossessionUI() {
+  possessionTeamEl.textContent = getActiveTeamName(possession);
+}
+
+// When either team selection changes, refresh the label
+team1Select.addEventListener("change", updatePossessionUI);
+team2Select.addEventListener("change", updatePossessionUI);
+
+// Toggle possession between the active teams
+possessionToggleBtn.addEventListener("click", () => {
+  possession = (possession === "team1") ? "team2" : "team1";
+  updatePossessionUI();
+
+  // If the first-down line is currently active, snap it to the new direction
+  if (firstDownYard !== null) {
+    firstDownYard = (possession === "team1") ? (ballYard + toGo) : (ballYard - toGo);
+    requestRedraw();
+  }
+});
+
+// Initial label paint
+updatePossessionUI();
+
+
 
 </script>
 
