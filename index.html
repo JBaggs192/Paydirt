@@ -221,14 +221,24 @@
     }
 
     .die {
-      flex: 1;
-      padding: 6px 0;
-      text-align: center;
-      border-radius: 6px;
-      font-weight: bold;
-      border: 2px solid white;
-      font-size: 13px;
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+  border: 2px solid white;
+  font-size: 18px;
     }
+
+    .die {
+      box-shadow:
+        inset 0 -2px 0 rgba(0,0,0,0.25),
+        0 3px 6px rgba(0,0,0,0.4);
+    }
+
 
     /* Dice colors */
     .die.black { background:#000; color:white; }
@@ -263,6 +273,54 @@
     .die span {
       font-size: 18px;
     }
+
+    .die.rolling {
+  animation: rollSpin 0.6s linear infinite;
+}
+
+@keyframes rollSpin {
+  0%   { transform: rotate(0deg) scale(1); }
+  25%  { transform: rotate(90deg) scale(1.08); }
+  50%  { transform: rotate(180deg) scale(0.95); }
+  75%  { transform: rotate(270deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.die.settle {
+  animation: diceSettle 0.18s ease-out;
+}
+
+@keyframes diceSettle {
+  0%   { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* ===========================
+   DICE PIPS (ADD ONLY)
+   =========================== */
+.pips {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pip {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Pip positions */
+.pip.tl { top: 8px; left: 8px; }
+.pip.tr { top: 8px; right: 8px; }
+.pip.bl { bottom: 8px; left: 8px; }
+.pip.br { bottom: 8px; right: 8px; }
+.pip.ml { top: 50%; left: 8px; transform: translateY(-50%); }
+.pip.mr { top: 50%; right: 8px; transform: translateY(-50%); }
+.pip.c  { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
 
     /* ===========================
        STATUS BAR
@@ -357,38 +415,39 @@
     <!-- ===========================
          DICE PANEL
          =========================== -->
-    <div id="dice-panel">
+<div id="dice-panel">
 
-      <!-- OFFENSE -->
-      <div class="dice-box offense">
-        <div class="dice-title">Offense</div>
+  <!-- OFFENSE -->
+  <div class="dice-box offense">
+    <div class="dice-title">Offense</div>
 
-        <div class="dice-list">
-          <div class="die black"><span id="offBlack">–</span></div>
-          <div class="die yellow"><span id="offYellow">–</span></div>
-          <div class="die white"><span id="offWhite">–</span></div>
-        </div>
-
-        <div class="dice-result">
-          Total: <span id="offenseResult">—</span>
-        </div>
-      </div>
-
-      <!-- DEFENSE -->
-      <div class="dice-box defense">
-        <div class="dice-title">Defense</div>
-
-        <div class="dice-list">
-          <div class="die green"><span id="defGreen">–</span></div>
-          <div class="die red"><span id="defRed">–</span></div>
-        </div>
-
-        <div class="dice-result">
-          Total: <span id="defenseResult">—</span>
-        </div>
-      </div>
-
+    <div class="dice-list">
+      <div class="die black"><div class="pips" id="offBlack"></div></div>
+      <div class="die yellow"><div class="pips" id="offYellow"></div></div>
+      <div class="die white"><div class="pips" id="offWhite"></div></div>
     </div>
+
+    <div class="dice-result">
+      Total: <span id="offenseResult">—</span>
+    </div>
+  </div>
+
+  <!-- DEFENSE -->
+  <div class="dice-box defense">
+    <div class="dice-title">Defense</div>
+
+    <div class="dice-list">
+      <div class="die green"><div class="pips" id="defGreen"></div></div>
+      <div class="die red"><div class="pips" id="defRed"></div></div>
+    </div>
+
+    <div class="dice-result">
+      Total: <span id="defenseResult">—</span>
+    </div>
+  </div>
+
+</div>
+
   </div>
 
   <!-- CONTROLS -->
@@ -896,7 +955,7 @@ const dice = {
   offense: {
     black: [1,2,2,3,3,3],
     yellow: [0,1,2,3,4,5],
-    white: [0,0,0,0,1,2]
+    white: [0,0,1,2,3,4]
   },
   defense: {
     green: [0,0,0,0,1,2],
@@ -908,52 +967,96 @@ function rollDie(faces) {
   return faces[Math.floor(Math.random() * faces.length)];
 }
 
-function animateDice(dieEls, rollFn, resultCallback) {
-  dieEls.forEach(el => {
-    el.parentElement.classList.add("rolling");
-    el.textContent = Math.floor(Math.random() * 6);
-  });
+/* ===========================
+   DICE FACE RENDERING (PIPS)
+   =========================== */
+function renderDieFace(container, value) {
+  container.innerHTML = "";
 
-  setTimeout(() => {
-    dieEls.forEach(el => {
-      el.parentElement.classList.remove("rolling");
-    });
-    resultCallback();
-  }, 600);
+  const faces = {
+    1: ["c"],
+    2: ["tl", "br"],
+    3: ["tl", "c", "br"],
+    4: ["tl", "tr", "bl", "br"],
+    5: ["tl", "tr", "c", "bl", "br"],
+    6: ["tl", "tr", "ml", "mr", "bl", "br"]
+  };
+
+  (faces[value] || []).forEach(pos => {
+    const pip = document.createElement("div");
+    pip.className = `pip ${pos}`;
+    container.appendChild(pip);
+  });
 }
 
+function animateDice(dieEls, faceArrays, resultCallback) {
+  const intervals = [];
+  const results = [];
+
+  dieEls.forEach((el, i) => {
+    const faces = faceArrays[i];
+
+    el.parentElement.classList.add("rolling");
+
+    const interval = setInterval(() => {
+      const face = faces[Math.floor(Math.random() * faces.length)];
+      renderDieFace(el, face);
+    }, 60 + Math.random() * 40);
+
+    intervals.push(interval);
+
+    const stopTime = 450 + Math.random() * 300;
+
+    setTimeout(() => {
+      clearInterval(interval);
+
+      const final = rollDie(faces);
+      renderDieFace(el, final);
+      results[i] = final;
+
+      el.parentElement.classList.remove("rolling");
+      el.parentElement.classList.add("settle");
+
+      setTimeout(() => {
+        el.parentElement.classList.remove("settle");
+      }, 180);
+
+      if (results.filter(v => v !== undefined).length === dieEls.length) {
+        resultCallback(results);
+      }
+    }, stopTime);
+  });
+}
+
+/* OFFENSE */
 function rollOffenseDice() {
   const blackEl = document.getElementById("offBlack");
   const yellowEl = document.getElementById("offYellow");
   const whiteEl = document.getElementById("offWhite");
 
-  animateDice([blackEl, yellowEl, whiteEl], null, () => {
-    const b = rollDie(dice.offense.black);
-    const y = rollDie(dice.offense.yellow);
-    const w = rollDie(dice.offense.white);
-
-    blackEl.textContent = b;
-    yellowEl.textContent = y;
-    whiteEl.textContent = w;
-
-    document.getElementById("offenseResult").textContent = b + y + w;
-  });
+  animateDice(
+    [blackEl, yellowEl, whiteEl],
+    [dice.offense.black, dice.offense.yellow, dice.offense.white],
+    ([b, y, w]) => {
+      document.getElementById("offenseResult").textContent = b + y + w;
+    }
+  );
 }
 
+/* DEFENSE */
 function rollDefenseDice() {
   const greenEl = document.getElementById("defGreen");
   const redEl = document.getElementById("defRed");
 
-  animateDice([greenEl, redEl], null, () => {
-    const g = rollDie(dice.defense.green);
-    const r = rollDie(dice.defense.red);
-
-    greenEl.textContent = g;
-    redEl.textContent = r;
-
-    document.getElementById("defenseResult").textContent = g + r;
-  });
+  animateDice(
+    [greenEl, redEl],
+    [dice.defense.green, dice.defense.red],
+    ([g, r]) => {
+      document.getElementById("defenseResult").textContent = g + r;
+    }
+  );
 }
+
 </script>
 
 </body>
