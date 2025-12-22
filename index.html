@@ -132,6 +132,73 @@
   font-weight: bold;
 }
 
+#down-distance {
+  margin-top: 8px;
+  margin-bottom: 10px;
+  padding: 6px 18px;
+  border: 2px solid white;
+  border-radius: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* ===========================
+   CONTROLS PANEL
+   =========================== */
+#controls-panel {
+  position: absolute;
+  left: 20px;
+  top: 140px;
+  width: 260px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow: 0 0 18px rgba(0,0,0,0.6);
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.controls-title {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.control-row:last-child {
+  margin-bottom: 0;
+}
+
+.key {
+  min-width: 60px;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.5);
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+}
+
+.desc {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
 /* ===========================
    POSSESSION INDICATOR
    =========================== */
@@ -149,23 +216,12 @@
   color: rgba(255,255,255,0.85);
 }
 
-#possessionToggle {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.5);
-  color: white;
-  font-size: 15px;
-  padding: 6px 14px;
+#possessionTeam {
+  font-weight: bold;
+  padding: 4px 10px;
   border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.08s ease;
-}
-
-#possessionToggle:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-#possessionToggle:active {
-  transform: translateY(1px);
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.35);
 }
 
   </style>
@@ -187,23 +243,47 @@
     </div>
   </div>
 
-<div id="possession-indicator">
-  <span class="label">Possession:</span>
-  <button id="possessionToggle">
-    <span id="possessionTeam">Team 1</span>
-  </button>
+  <div id="controls-panel">
+  <div class="controls-title">Controls</div>
+
+  <div class="control-row">
+  <div class="key-group">
+    <span class="key">←</span>
+    <span class="key">→</span>
+  </div>
+  <span class="desc">Move Ball</span>
+</div>
+
+
+  <div class="control-row">
+    <span class="key">↑</span>
+    <span class="desc">Reset 1st &amp; 10</span>
+  </div>
+
+  <div class="control-row">
+    <span class="key">Space</span>
+    <span class="desc">Advance Down</span>
+  </div>
+
+  <div class="control-row">
+    <span class="key">Enter</span>
+    <span class="desc">Switch Possession</span>
+  </div>
+</div>
+
+
+<div id="down-distance">
+  <span id="downText">1st</span>
+  &amp;
+  <span id="distanceText">10</span>
 </div>
 
   <canvas id="field" width="1000" height="400"></canvas>
 </div>
 
-<div id="reset-hint">
-  <button id="resetFirstDownBtn">
-    Reset 1st &amp; 10
-  </button>
-  <div class="reset-subtext">
-    Click here or press <span class="key">↑</span>
-  </div>
+<div id="possession-indicator">
+  <span class="label">Possession:</span>
+  <span id="possessionTeam">Team 1</span>
 </div>
 
 <script>
@@ -245,6 +325,8 @@ const TEAM_COLORS = {
   "Washington Commanders": { bg:"#5A1414", text:"#FFB612", outline:"#000000" }
 };
 
+
+
 /* ===========================
    CANVAS SETUP
    =========================== */
@@ -254,6 +336,9 @@ const ctx = canvas.getContext("2d");
 const W = canvas.width;
 const H = canvas.height;
 
+const downTextEl = document.getElementById("downText");
+const distanceTextEl = document.getElementById("distanceText");
+
 const TOTAL_YARDS = 120;
 const ENDZONE = 10;
 const PLAY_START = ENDZONE;
@@ -262,6 +347,9 @@ const P = W / TOTAL_YARDS;
 
 const MIDFIELD_YARD = 60;
 const LOGO_WIDTH_YARDS = 10;
+
+const LEFT_GOAL_LINE = 10;
+const RIGHT_GOAL_LINE = 110;
 
 const footballImg = new Image();
 footballImg.src = "football_clean.png";
@@ -274,12 +362,56 @@ let firstDownYard = null;
 let possession = "team1";
 let down = 1;
 let toGo = 10;
+let lineOfScrimmageYard = null;
+
+
 
 /* ===========================
    HELPERS
    =========================== */
 const xOf = yard => yard * P;
 const getMascot = team => team ? team.split(" ").pop().toUpperCase() : "";
+
+function getDownLabel(d) {
+  if (d === 1) return "1st";
+  if (d === 2) return "2nd";
+  if (d === 3) return "3rd";
+  return "4th";
+}
+
+function getGoalLineYard() {
+  return possession === "team1" ? RIGHT_GOAL_LINE : LEFT_GOAL_LINE;
+}
+
+function recalculateDownAndDistance() {
+  if (firstDownYard === null) return;
+
+  const goalLine = getGoalLineYard();
+  let yardsToGoal;
+
+  if (possession === "team1") {
+    yardsToGoal = Math.max(0, goalLine - ballYard);
+  } else {
+    yardsToGoal = Math.max(0, ballYard - goalLine);
+  }
+
+  // 1st and goal logic? Trying this at least
+  if (
+    (possession === "team1" && firstDownYard >= goalLine) ||
+    (possession === "team2" && firstDownYard <= goalLine)
+  ) {
+    distanceTextEl.textContent = "Goal";
+  } else {
+    let yardsRemaining =
+      possession === "team1"
+        ? Math.round(firstDownYard - ballYard)
+        : Math.round(ballYard - firstDownYard);
+
+    distanceTextEl.textContent = Math.max(0, yardsRemaining);
+  }
+
+  downTextEl.textContent = getDownLabel(down);
+}
 
 /* ===========================
    FIELD DRAWING
@@ -433,15 +565,33 @@ function drawFirstDownLine() {
   ctx.restore();
 }
 
+function drawLineOfScrimmage() {
+  if (lineOfScrimmageYard === null) return;
+
+  const x = xOf(lineOfScrimmageYard);
+
+  ctx.strokeStyle = "#3b82f6"; 
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+  ctx.moveTo(x, 0);
+  ctx.lineTo(x, H);
+  ctx.stroke();
+}
+
 function resetFirstDown() {
   down = 1;
-  ToGo = 10;
+  toGo = 10;
+  lineOfScrimmageYard = ballYard;
+  const goalLine = getGoalLineYard();
 
   if (possession === "team1") {
-    firstDownYard = (ballYard + toGo);
+    firstDownYard = Math.min(ballYard + toGo, goalLine);
   } else {
-    firstDownYard = (ballYard - toGo)
+    firstDownYard = Math.max(ballYard - toGo, goalLine);
   }
+
+  recalculateDownAndDistance();
   requestRedraw();
 }
 
@@ -449,8 +599,10 @@ function requestRedraw() {
   requestAnimationFrame(drawField)
 }
 
+
+
 /* ===========================
-   MASTER DRAW (FIXED ORDER)
+   MASTER DRAW FUNCTION TO CREATE EVERYTHING
    =========================== */
 function drawField() {
   drawBackground();
@@ -461,14 +613,16 @@ function drawField() {
   drawHashMarks();
   drawNumbers();
   drawMidfieldLogo();
+  drawLineOfScrimmage();
   drawFirstDownLine();
   drawFootball();
-  updatePossessionUI();
   
 }
 
+
+
 /* ===========================
-   UI
+   key interactions
    =========================== */
 
 Object.keys(TEAM_COLORS).forEach(t => {
@@ -479,7 +633,7 @@ Object.keys(TEAM_COLORS).forEach(t => {
 team1.onchange = team2.onchange = drawField;
 
 document.addEventListener("keydown", (e) => {
-  if (["ArrowLeft", "ArrowRight", "ArrowUp"].includes(e.key)) {
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space", "Enter"].includes(e.key)) {
     e.preventDefault();
   }
 
@@ -501,10 +655,26 @@ document.addEventListener("keydown", (e) => {
     return;
   }
 
+  if (e.code === "Space") {
+    down = down < 4 ? down + 1 : 1;
+    lineOfScrimmageYard = ballYard;
+    recalculateDownAndDistance();
+    requestRedraw();
+    return;
+  }
+
+  if (e.key === "Enter") {
+  e.preventDefault();
+  togglePossession();
+  return;
+}
+
   if (didChange) {
+    recalculateDownAndDistance(); 
     requestRedraw();
   }
 });
+
 
 function tryInitialDraw() {
   if (footballImg.complete && bflLogo.complete) drawField();
@@ -512,51 +682,42 @@ function tryInitialDraw() {
 footballImg.onload = tryInitialDraw;
 bflLogo.onload = tryInitialDraw;
 
-document
-  .getElementById("resetFirstDownBtn")
-  .addEventListener("click", resetFirstDown);
-
-
-  
 // ===========================
 // POSSESSION LOGIC
 // ===========================
 
-const team1Select = document.getElementById("team1");
-const team2Select = document.getElementById("team2");
 
-const possessionToggleBtn = document.getElementById("possessionToggle");
 const possessionTeamEl = document.getElementById("possessionTeam");
 
 function getActiveTeamName(teamKey) {
-  if (teamKey === "team1") return team1Select.value?.trim() || "Team 1";
-  return team2Select.value?.trim() || "Team 2";
+  const select = teamKey === "team1" ? team1 : team2;
+  const option = select.options[select.selectedIndex];
+  return option ? option.text : teamKey === "team1" ? "Team 1" : "Team 2";
 }
 
 function updatePossessionUI() {
   possessionTeamEl.textContent = getActiveTeamName(possession);
 }
 
-// When either team selection changes, refresh the label
-team1Select.addEventListener("change", updatePossessionUI);
-team2Select.addEventListener("change", updatePossessionUI);
+team1.addEventListener("change", updatePossessionUI);
+team2.addEventListener("change", updatePossessionUI);
 
-// Toggle possession between the active teams
-possessionToggleBtn.addEventListener("click", () => {
-  possession = (possession === "team1") ? "team2" : "team1";
+function togglePossession() {
+  possession = possession === "team1" ? "team2" : "team1";
   updatePossessionUI();
 
-  // If the first-down line is currently active, snap it to the new direction
   if (firstDownYard !== null) {
-    firstDownYard = (possession === "team1") ? (ballYard + toGo) : (ballYard - toGo);
-    requestRedraw();
+    firstDownYard =
+      possession === "team1"
+        ? ballYard + toGo
+        : ballYard - toGo;
   }
-});
 
-// Initial label paint
+  recalculateDownAndDistance();
+  requestRedraw();
+}
+
 updatePossessionUI();
-
-
 
 </script>
 
