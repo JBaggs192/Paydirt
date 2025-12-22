@@ -386,8 +386,8 @@
       <input type="number" id="score1" class="score" value="0">
 
       <div class="team-down" id="team1Down">
-        <span id="downText">1st</span> &amp;
-        <span id="distanceText">10</span>
+        <span id="down-text">1st</span> &amp;
+        <span id="distance-text">10</span>
       </div>
     </div>
 
@@ -540,8 +540,14 @@ const W = canvas.width;
 const H = canvas.height;
 
 /* Keep existing IDs for down/distance; use the first occurrences (team1Down). */
-const downTextEl = document.getElementById("downText");
-const distanceTextEl = document.getElementById("distanceText");
+function getDownDistanceEls() {
+  const teamEl = document.querySelector(".team.possession");
+  if (!teamEl) return {};
+  return {
+    down: teamEl.querySelector(".down-text"),
+    distance: teamEl.querySelector(".distance-text")
+  };
+}
 
 const TOTAL_YARDS = 120;
 const ENDZONE = 10;
@@ -585,28 +591,43 @@ function getGoalLineYard() {
   return possession === "team1" ? RIGHT_GOAL_LINE : LEFT_GOAL_LINE;
 }
 
+function getDownDistanceEls() {
+  const teamEl = document.querySelector(".team.possession");
+  if (!teamEl) return {};
+
+  return {
+    down: teamEl.querySelector(".down-text"),
+    distance: teamEl.querySelector(".distance-text")
+  };
+}
+
 function recalculateDownAndDistance() {
   if (firstDownYard === null) return;
 
+  const { down: downEl, distance: distanceEl } = getDownDistanceEls();
+  if (!downEl || !distanceEl) return;
+
   const goalLine = getGoalLineYard();
 
-  // 1st and goal logic? Trying this at least
+  // 1st and goal logic
   if (
     (possession === "team1" && firstDownYard >= goalLine) ||
     (possession === "team2" && firstDownYard <= goalLine)
   ) {
-    distanceTextEl.textContent = "Goal";
+    distanceEl.textContent = "Goal";
   } else {
     let yardsRemaining =
       possession === "team1"
         ? Math.round(firstDownYard - ballYard)
         : Math.round(ballYard - firstDownYard);
 
-    distanceTextEl.textContent = Math.max(0, yardsRemaining);
+    distanceEl.textContent = Math.max(0, yardsRemaining);
   }
 
-  downTextEl.textContent = getDownLabel(down);
+  downEl.textContent = getDownLabel(down);
 }
+
+
 
 /* ===========================
    FIELD DRAWING
