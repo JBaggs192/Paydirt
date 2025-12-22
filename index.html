@@ -1,230 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Baggaley Football League</title>
-
-  <style>
-    body {
-      background: #20252b;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-    }
-
-    #game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 16px;
-    }
-
-    #league-title {
-      font-size: 38px;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      margin-bottom: 14px;
-      text-align: center;
-    }
-
-    #scoreboard {
-      display: flex;
-      justify-content: center;
-      gap: 140px;
-      padding: 14px 40px;
-      margin-bottom: 20px;
-      border: 3px solid white;
-      border-radius: 14px;
-      background: rgba(0, 0, 0, 0.35);
-      box-shadow: 0 0 18px rgba(0,0,0,0.6);
-    }
-
-    .team {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 260px;
-    }
-
-    .team-select {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 30px;
-      font-weight: bold;
-      text-align: center;
-      cursor: pointer;
-      appearance: none;
-    }
-
-    .team-select option {
-      background-color: #20252b;
-      color: white;
-    }
-
-    .score {
-      margin-top: 8px;
-      background: none;
-      border: none;
-      color: white;
-      font-size: 42px;
-      font-weight: bold;
-      text-align: center;
-      width: 80px;
-    }
-
-    canvas {
-      border: 4px solid white;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      background: #0b5c1b;
-    }
-
-    #reset-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-#resetFirstDownBtn {
-  background: linear-gradient(180deg, #ffd400, #e6be00);
-  border: none;
-  color: #1a1a1a;
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 22px;
-  border-radius: 999px;
-  cursor: pointer;
-  box-shadow:
-    0 4px 10px rgba(0,0,0,0.4),
-    inset 0 -2px 0 rgba(0,0,0,0.25);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-}
-
-#resetFirstDownBtn:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.45),
-    inset 0 -2px 0 rgba(0,0,0,0.25);
-}
-
-#resetFirstDownBtn:active {
-  transform: translateY(1px);
-  box-shadow:
-    0 2px 6px rgba(0,0,0,0.4),
-    inset 0 2px 0 rgba(0,0,0,0.25);
-}
-
-.reset-subtext {
-  font-size: 13px;
-  color: rgba(255,255,255,0.75);
-  letter-spacing: 0.5px;
-}
-
-.reset-subtext .key {
-  display: inline-block;
-  padding: 2px 6px;
-  margin: 0 2px;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.35);
-  font-weight: bold;
-}
-
-#down-distance {
-  margin-top: 8px;
-  margin-bottom: 10px;
-  padding: 6px 18px;
-  border: 2px solid white;
-  border-radius: 10px;
-  font-size: 22px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  background: rgba(0, 0, 0, 0.35);
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-/* ===========================
-   CONTROLS PANEL
-   =========================== */
-#controls-panel {
-  position: absolute;
-  left: 20px;
-  top: 140px;
-  width: 260px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 2px solid rgba(255,255,255,0.4);
-  box-shadow: 0 0 18px rgba(0,0,0,0.6);
-  color: white;
-  font-family: Arial, sans-serif;
-}
-
-.controls-title {
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-
-.control-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 10px;
-}
-
-.control-row:last-child {
-  margin-bottom: 0;
-}
-
-.key {
-  min-width: 60px;
-  text-align: center;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.5);
-  font-weight: bold;
-  font-size: 14px;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
-}
-
-.desc {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-/* ===========================
-   POSSESSION INDICATOR
-   =========================== */
-#possession-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 6px;
-  font-size: 15px;
-}
-
-#possession-indicator .label {
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  color: rgba(255,255,255,0.85);
-}
-
-#possessionTeam {
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.35);
-}
-
-  </style>
 </head>
 
 <body>
@@ -243,483 +16,96 @@
     </div>
   </div>
 
+  <!-- ===========================
+       MAIN PLAY AREA (FIELD + DICE)
+       =========================== -->
+  <div id="main-play-area">
+
+    <!-- FIELD -->
+    <div id="field-wrapper">
+      <canvas id="field" width="1000" height="400"></canvas>
+    </div>
+
+    <!-- ===========================
+         DICE PANEL
+         =========================== -->
+    <div id="dice-panel">
+
+      <!-- OFFENSE -->
+      <div class="dice-box offense">
+        <div class="dice-title">Offense</div>
+
+        <div class="dice-list">
+          <div class="die black"><span id="offBlack">–</span></div>
+          <div class="die yellow"><span id="offYellow">–</span></div>
+          <div class="die white"><span id="offWhite">–</span></div>
+        </div>
+
+        <button class="roll-btn" id="rollOffense">Roll</button>
+
+        <div class="dice-result">
+          Total: <span id="offenseResult">—</span>
+        </div>
+      </div>
+
+      <!-- DEFENSE -->
+      <div class="dice-box defense">
+        <div class="dice-title">Defense</div>
+
+        <div class="dice-list">
+          <div class="die green"><span id="defGreen">–</span></div>
+          <div class="die red"><span id="defRed">–</span></div>
+        </div>
+
+        <button class="roll-btn" id="rollDefense">Roll</button>
+
+        <div class="dice-result">
+          Total: <span id="defenseResult">—</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
   <div id="controls-panel">
-  <div class="controls-title">Controls</div>
+    <div class="controls-title">Controls</div>
 
-  <div class="control-row">
-  <div class="key-group">
-    <span class="key">←</span>
-    <span class="key">→</span>
+    <div class="control-row">
+      <div class="key-group">
+        <span class="key">←</span>
+        <span class="key">→</span>
+      </div>
+      <span class="desc">Move Ball</span>
+    </div>
+
+    <div class="control-row">
+      <span class="key">↑</span>
+      <span class="desc">Reset 1st &amp; 10</span>
+    </div>
+
+    <div class="control-row">
+      <span class="key">Space</span>
+      <span class="desc">Advance Down</span>
+    </div>
+
+    <div class="control-row">
+      <span class="key">Enter</span>
+      <span class="desc">Switch Possession</span>
+    </div>
   </div>
-  <span class="desc">Move Ball</span>
+
+  <!-- DOWN & DISTANCE -->
+  <div id="down-distance">
+    <span id="downText">1st</span>
+    &amp;
+    <span id="distanceText">10</span>
+  </div>
+
 </div>
 
-
-  <div class="control-row">
-    <span class="key">↑</span>
-    <span class="desc">Reset 1st &amp; 10</span>
-  </div>
-
-  <div class="control-row">
-    <span class="key">Space</span>
-    <span class="desc">Advance Down</span>
-  </div>
-
-  <div class="control-row">
-    <span class="key">Enter</span>
-    <span class="desc">Switch Possession</span>
-  </div>
-</div>
-
-
-<div id="down-distance">
-  <span id="downText">1st</span>
-  &amp;
-  <span id="distanceText">10</span>
-</div>
-
-  <canvas id="field" width="1000" height="400"></canvas>
-</div>
-
+<!-- POSSESSION -->
 <div id="possession-indicator">
   <span class="label">Possession:</span>
   <span id="possessionTeam">Team 1</span>
 </div>
-
-<script>
-/* ===========================
-   TEAM COLORS
-   =========================== */
-const TEAM_COLORS = {
-  "Arizona Cardinals": { bg:"#000000", text:"#97233F", outline:"#FFFFFF" },
-  "Atlanta Falcons": { bg:"#000000", text:"#A71930", outline:"#C7C9CB" },
-  "Baltimore Ravens": { bg:"#000000", text:"#241773", outline:"#9E7C0C" },
-  "Buffalo Bills": { bg:"#00338D", text:"#C60C30", outline:"#FFFFFF" },
-  "Carolina Panthers": { bg:"#000000", text:"#0085CA", outline:"#BFC0BF" },
-  "Chicago Bears": { bg:"#0B162A", text:"#C83803", outline:"#FFFFFF" },
-  "Cincinnati Bengals": { bg:"#000000", text:"#FB4F14", outline:"#FFFFFF" },
-  "Cleveland Browns": { bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF" },
-  "Dallas Cowboys": { bg:"#002244", text:"#869397", outline:"#FFFFFF" },
-  "Denver Broncos": { bg:"#002244", text:"#FB4F14", outline:"#FFFFFF" },
-  "Detroit Lions": { bg:"#0076B6", text:"#B0B7BC", outline:"#000000" },
-  "Green Bay Packers": { bg:"#203731", text:"#FFB612", outline:"#FFFFFF" },
-  "Houston Texans": { bg:"#021018", text:"#A71930", outline:"#FFFFFF" },
-  "Indianapolis Colts": { bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF" },
-  "Jacksonville Jaguars": { bg:"#000000", text:"#006778", outline:"#D7A22A" },
-  "Kansas City Chiefs": { bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF" },
-  "Las Vegas Raiders": { bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF" },
-  "Los Angeles Chargers": { bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF" },
-  "Los Angeles Rams": { bg:"#003594", text:"#FFA300", outline:"#FFFFFF" },
-  "Miami Dolphins": { bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF" },
-  "Minnesota Vikings": { bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF" },
-  "New England Patriots": { bg:"#002244", text:"#C60C30", outline:"#B0B7BC" },
-  "New Orleans Saints": { bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF" },
-  "New York Giants": { bg:"#0B2265", text:"#A71930", outline:"#FFFFFF" },
-  "New York Jets": { bg:"#115740", text:"#FFFFFF", outline:"#000000" },
-  "Philadelphia Eagles": { bg:"#004851", text:"#A5ACAF", outline:"#000000" },
-  "Pittsburgh Steelers": { bg:"#000000", text:"#FFB612", outline:"#FFFFFF" },
-  "San Francisco 49ers": { bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF" },
-  "Seattle Seahawks": { bg:"#002244", text:"#69BE28", outline:"#A5ACAF" },
-  "Tampa Bay Buccaneers": { bg:"#A71930", text:"#34302B", outline:"#FFFFFF" },
-  "Tennessee Titans": { bg:"#002244", text:"#4B92DB", outline:"#C60C30" },
-  "Washington Commanders": { bg:"#5A1414", text:"#FFB612", outline:"#000000" }
-};
-
-
-
-/* ===========================
-   CANVAS SETUP
-   =========================== */
-const canvas = document.getElementById("field");
-const ctx = canvas.getContext("2d");
-
-const W = canvas.width;
-const H = canvas.height;
-
-const downTextEl = document.getElementById("downText");
-const distanceTextEl = document.getElementById("distanceText");
-
-const TOTAL_YARDS = 120;
-const ENDZONE = 10;
-const PLAY_START = ENDZONE;
-const PLAY_END = TOTAL_YARDS - ENDZONE;
-const P = W / TOTAL_YARDS;
-
-const MIDFIELD_YARD = 60;
-const LOGO_WIDTH_YARDS = 10;
-
-const LEFT_GOAL_LINE = 10;
-const RIGHT_GOAL_LINE = 110;
-
-const footballImg = new Image();
-footballImg.src = "football_clean.png";
-
-const bflLogo = new Image();
-bflLogo.src = "BFL_logo.png";
-
-let ballYard = 35;
-let firstDownYard = null;
-let possession = "team1";
-let down = 1;
-let toGo = 10;
-let lineOfScrimmageYard = null;
-
-
-
-/* ===========================
-   HELPERS
-   =========================== */
-const xOf = yard => yard * P;
-const getMascot = team => team ? team.split(" ").pop().toUpperCase() : "";
-
-function getDownLabel(d) {
-  if (d === 1) return "1st";
-  if (d === 2) return "2nd";
-  if (d === 3) return "3rd";
-  return "4th";
-}
-
-function getGoalLineYard() {
-  return possession === "team1" ? RIGHT_GOAL_LINE : LEFT_GOAL_LINE;
-}
-
-function recalculateDownAndDistance() {
-  if (firstDownYard === null) return;
-
-  const goalLine = getGoalLineYard();
-  let yardsToGoal;
-
-  if (possession === "team1") {
-    yardsToGoal = Math.max(0, goalLine - ballYard);
-  } else {
-    yardsToGoal = Math.max(0, ballYard - goalLine);
-  }
-
-  // 1st and goal logic? Trying this at least
-  if (
-    (possession === "team1" && firstDownYard >= goalLine) ||
-    (possession === "team2" && firstDownYard <= goalLine)
-  ) {
-    distanceTextEl.textContent = "Goal";
-  } else {
-    let yardsRemaining =
-      possession === "team1"
-        ? Math.round(firstDownYard - ballYard)
-        : Math.round(ballYard - firstDownYard);
-
-    distanceTextEl.textContent = Math.max(0, yardsRemaining);
-  }
-
-  downTextEl.textContent = getDownLabel(down);
-}
-
-/* ===========================
-   FIELD DRAWING
-   =========================== */
-function drawBackground() {
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#166b24");
-  g.addColorStop(0.5, "#0b5c1b");
-  g.addColorStop(1, "#166b24");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-
-  for (let y = PLAY_START; y < PLAY_END; y += 5) {
-    if (((y - PLAY_START) / 5) % 2 === 0) continue;
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    ctx.fillRect(xOf(y), 0, 5 * P, H);
-  }
-}
-
-function drawMidfieldLogo() {
-  if (!bflLogo.complete || !bflLogo.naturalWidth) return;
-
-  const logoW = LOGO_WIDTH_YARDS * P;
-  const aspect = bflLogo.naturalHeight / bflLogo.naturalWidth;
-  const logoH = logoW * aspect;
-
-  const x = Math.round(xOf(MIDFIELD_YARD) - logoW / 2);
-  const y = Math.round(H / 2 - logoH / 2);
-
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-  ctx.drawImage(bflLogo, x, y, logoW, logoH);
-  ctx.restore();
-}
-
-function drawEndzone(team, centerX, rotation) {
-  if (!team) return;
-  const { bg, text, outline } = TEAM_COLORS[team];
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(centerX - (ENDZONE * P) / 2, 0, ENDZONE * P, H);
-
-  ctx.save();
-  ctx.translate(centerX, H / 2);
-  ctx.rotate(rotation);
-
-  ctx.font = "bold 40px Arial Black";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 4;
-
-  ctx.strokeStyle = outline;
-  ctx.strokeText(getMascot(team), 0, 0);
-
-  ctx.fillStyle = text;
-  ctx.fillText(getMascot(team), 0, 0);
-
-  ctx.restore();
-}
-
-function drawBoundaries() {
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(0, 0, W, H);
-
-  ctx.beginPath();
-  ctx.moveTo(xOf(PLAY_START), 0);
-  ctx.lineTo(xOf(PLAY_START), H);
-  ctx.moveTo(xOf(PLAY_END), 0);
-  ctx.lineTo(xOf(PLAY_END), H);
-  ctx.stroke();
-}
-
-function drawYardLines() {
-  ctx.strokeStyle = "white";
-  for (let y = PLAY_START; y <= PLAY_END; y += 5) {
-    ctx.beginPath();
-    ctx.lineWidth = ((y - PLAY_START) % 10 === 0) ? 2.5 : 1;
-    ctx.moveTo(xOf(y), 0);
-    ctx.lineTo(xOf(y), H);
-    ctx.stroke();
-  }
-}
-
-function drawHashMarks() {
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 1;
-  const top = H * 0.32;
-  const bot = H * 0.68;
-
-  for (let y = PLAY_START + 1; y < PLAY_END; y++) {
-    const x = xOf(y);
-    ctx.beginPath();
-    ctx.moveTo(x, top);
-    ctx.lineTo(x, top + 6);
-    ctx.moveTo(x, bot);
-    ctx.lineTo(x, bot - 6);
-    ctx.stroke();
-  }
-}
-
-function drawNumbers() {
-  ctx.fillStyle = "white";
-  ctx.font = "26px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  const topY = H * 0.18;
-  const bottomY = H * 0.82;
-
-  for (let n = 10; n <= 50; n += 10) {
-    const leftX = xOf(PLAY_START + n);
-    const rightX = xOf(PLAY_END - n);
-
-    ctx.fillText(n, leftX, topY);
-    ctx.fillText(n, rightX, topY);
-
-    ctx.save();
-    ctx.translate(leftX, bottomY);
-    ctx.rotate(Math.PI);
-    ctx.fillText(n, 0, 0);
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(rightX, bottomY);
-    ctx.rotate(Math.PI);
-    ctx.fillText(n, 0, 0);
-    ctx.restore();
-  }
-}
-
-function drawFootball() {
-  if (!footballImg.complete) return;
-  ctx.drawImage(footballImg, xOf(ballYard) - 25, H / 2 - 27, 50, 55);
-}
-
-function drawFirstDownLine() {
-  if (firstDownYard === null) return;
-
-  ctx.save();
-  ctx.strokeStyle = "#FFD400";
-  ctx.lineWidth = 4;
-  
-  const x = xOf(firstDownYard);
-  ctx.beginPath();
-  ctx.moveTo(x, 0);
-  ctx.lineTo(x, H);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawLineOfScrimmage() {
-  if (lineOfScrimmageYard === null) return;
-
-  const x = xOf(lineOfScrimmageYard);
-
-  ctx.strokeStyle = "#3b82f6"; 
-  ctx.lineWidth = 3;
-
-  ctx.beginPath();
-  ctx.moveTo(x, 0);
-  ctx.lineTo(x, H);
-  ctx.stroke();
-}
-
-function resetFirstDown() {
-  down = 1;
-  toGo = 10;
-  lineOfScrimmageYard = ballYard;
-  const goalLine = getGoalLineYard();
-
-  if (possession === "team1") {
-    firstDownYard = Math.min(ballYard + toGo, goalLine);
-  } else {
-    firstDownYard = Math.max(ballYard - toGo, goalLine);
-  }
-
-  recalculateDownAndDistance();
-  requestRedraw();
-}
-
-function requestRedraw() {
-  requestAnimationFrame(drawField)
-}
-
-
-
-/* ===========================
-   MASTER DRAW FUNCTION TO CREATE EVERYTHING
-   =========================== */
-function drawField() {
-  drawBackground();
-  drawEndzone(team1.value, xOf(ENDZONE / 2), -Math.PI / 2);
-  drawEndzone(team2.value, xOf(PLAY_END + ENDZONE / 2), Math.PI / 2);
-  drawBoundaries();
-  drawYardLines();
-  drawHashMarks();
-  drawNumbers();
-  drawMidfieldLogo();
-  drawLineOfScrimmage();
-  drawFirstDownLine();
-  drawFootball();
-  
-}
-
-
-
-/* ===========================
-   key interactions
-   =========================== */
-
-Object.keys(TEAM_COLORS).forEach(t => {
-  team1.add(new Option(t, t));
-  team2.add(new Option(t, t));
-});
-
-team1.onchange = team2.onchange = drawField;
-
-document.addEventListener("keydown", (e) => {
-  if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space", "Enter"].includes(e.key)) {
-    e.preventDefault();
-  }
-
-  const step = e.shiftKey ? 10 : 1;
-  let didChange = false;
-
-  if (e.key === "ArrowLeft") {
-    ballYard = Math.max(0, ballYard - step);
-    didChange = true;
-  }
-
-  if (e.key === "ArrowRight") {
-    ballYard = Math.min(120, ballYard + step);
-    didChange = true;
-  }
-
-  if (e.key === "ArrowUp") {
-    resetFirstDown();
-    return;
-  }
-
-  if (e.code === "Space") {
-    down = down < 4 ? down + 1 : 1;
-    lineOfScrimmageYard = ballYard;
-    recalculateDownAndDistance();
-    requestRedraw();
-    return;
-  }
-
-  if (e.key === "Enter") {
-  e.preventDefault();
-  togglePossession();
-  return;
-}
-
-  if (didChange) {
-    recalculateDownAndDistance(); 
-    requestRedraw();
-  }
-});
-
-
-function tryInitialDraw() {
-  if (footballImg.complete && bflLogo.complete) drawField();
-}
-footballImg.onload = tryInitialDraw;
-bflLogo.onload = tryInitialDraw;
-
-// ===========================
-// POSSESSION LOGIC
-// ===========================
-
-
-const possessionTeamEl = document.getElementById("possessionTeam");
-
-function getActiveTeamName(teamKey) {
-  const select = teamKey === "team1" ? team1 : team2;
-  const option = select.options[select.selectedIndex];
-  return option ? option.text : teamKey === "team1" ? "Team 1" : "Team 2";
-}
-
-function updatePossessionUI() {
-  possessionTeamEl.textContent = getActiveTeamName(possession);
-}
-
-team1.addEventListener("change", updatePossessionUI);
-team2.addEventListener("change", updatePossessionUI);
-
-function togglePossession() {
-  possession = possession === "team1" ? "team2" : "team1";
-  updatePossessionUI();
-
-  if (firstDownYard !== null) {
-    firstDownYard =
-      possession === "team1"
-        ? ballYard + toGo
-        : ballYard - toGo;
-  }
-
-  recalculateDownAndDistance();
-  requestRedraw();
-}
-
-updatePossessionUI();
-
-</script>
-
-</body>
-</html>
