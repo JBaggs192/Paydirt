@@ -371,28 +371,64 @@
     .team.possession .team-down {
       opacity: 1;
     }
+
+    .team-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.team-logo {
+  height: 100px;
+  margin-bottom: 6px;
+  display: none;
+}
+
+#controls-panel .team-select {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  appearance: auto;
+}
+
+#controls-panel .team-select option {
+  background: #20252b;
+  color: white;
+}
+
   </style>
 
 </head>
 
 <body>
-
-<div id="game-container">
+  <div id="game-container">
   <div id="league-title">Baggaley Football League</div>
 
+  <!-- ===========================
+       SCOREBOARD
+       =========================== -->
   <div id="scoreboard">
     <div class="team team1">
-      <select id="team1" class="team-select"></select>
+      <div class="team-header">
+        <img class="team-logo" id="team1Logo" />
+      </div>
+
       <input type="number" id="score1" class="score" value="0">
 
       <div class="team-down" id="team1Down">
         <span class="down-text">1st</span> &amp;
-        <span class ="distance-text">10</span>
+        <span class="distance-text">10</span>
       </div>
     </div>
 
     <div class="team team2">
-      <select id="team2" class="team-select"></select>
+      <div class="team-header">
+        <img class="team-logo" id="team2Logo" />
+      </div>
+
       <input type="number" id="score2" class="score" value="0">
 
       <div class="team-down" id="team2Down">
@@ -407,7 +443,7 @@
        =========================== -->
   <div id="main-play-area">
 
-    <!-- Removed floating 1st & 10 box and Possession team box (status bar) -->
+    <!-- Removed floating 1st & 10 box and Possession team box -->
     <div id="status-bar" style="display:none;"></div>
 
     <!-- FIELD -->
@@ -418,42 +454,43 @@
     <!-- ===========================
          DICE PANEL
          =========================== -->
-<div id="dice-panel">
+    <div id="dice-panel">
 
-  <!-- OFFENSE -->
-  <div class="dice-box offense">
-    <div class="dice-title">Offense</div>
+      <!-- OFFENSE -->
+      <div class="dice-box offense">
+        <div class="dice-title">Offense</div>
 
-    <div class="dice-list">
-      <div class="die black"><div class="pips" id="offBlack"></div></div>
-      <div class="die yellow"><div class="pips" id="offYellow"></div></div>
-      <div class="die white"><div class="pips" id="offWhite"></div></div>
-    </div>
+        <div class="dice-list">
+          <div class="die black"><div class="pips" id="offBlack"></div></div>
+          <div class="die yellow"><div class="pips" id="offYellow"></div></div>
+          <div class="die white"><div class="pips" id="offWhite"></div></div>
+        </div>
 
-    <div class="dice-result">
-      Total: <span id="offenseResult">—</span>
+        <div class="dice-result">
+          Total: <span id="offenseResult">—</span>
+        </div>
+      </div>
+
+      <!-- DEFENSE -->
+      <div class="dice-box defense">
+        <div class="dice-title">Defense</div>
+
+        <div class="dice-list">
+          <div class="die green"><div class="pips" id="defGreen"></div></div>
+          <div class="die red"><div class="pips" id="defRed"></div></div>
+        </div>
+
+        <div class="dice-result">
+          Total: <span id="defenseResult">—</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- DEFENSE -->
-  <div class="dice-box defense">
-    <div class="dice-title">Defense</div>
-
-    <div class="dice-list">
-      <div class="die green"><div class="pips" id="defGreen"></div></div>
-      <div class="die red"><div class="pips" id="defRed"></div></div>
-    </div>
-
-    <div class="dice-result">
-      Total: <span id="defenseResult">—</span>
-    </div>
-  </div>
-
-</div>
-
-  </div>
-
-  <!-- CONTROLS -->
+  <!-- ===========================
+       CONTROLS + TEAM SELECTORS
+       =========================== -->
   <div id="controls-panel">
     <div class="controls-title">Controls</div>
 
@@ -479,7 +516,7 @@
       <span class="key">Enter</span>
       <span class="desc">Switch Possession</span>
     </div>
-  
+
     <div class="control-row">
       <span class="key">O</span>
       <span class="desc">Roll for Offense</span>
@@ -490,47 +527,156 @@
       <span class="desc">Roll for Defense</span>
     </div>
 
+    <hr style="margin: 14px 0; opacity: 0.3;">
 
-  </div>  
+<div class="controls-title">Team Select</div>
+
+<div class="control-row">
+  <span class="key">T1</span>
+  <select id="team1" class="team-select">
+  </select>
 </div>
+
+<div class="control-row">
+  <span class="key">T2</span>
+  <select id="team2" class="team-select">
+  </select>
+</div>
+
 
 <script>
 /* ===========================
-   TEAM COLORS
+   TEAM COLORS and logos
    =========================== */
 const TEAM_COLORS = {
-  "Arizona Cardinals": { bg:"#000000", text:"#97233F", outline:"#FFFFFF" },
-  "Atlanta Falcons": { bg:"#000000", text:"#A71930", outline:"#C7C9CB" },
-  "Baltimore Ravens": { bg:"#000000", text:"#241773", outline:"#9E7C0C" },
-  "Buffalo Bills": { bg:"#00338D", text:"#C60C30", outline:"#FFFFFF" },
-  "Carolina Panthers": { bg:"#000000", text:"#0085CA", outline:"#BFC0BF" },
-  "Chicago Bears": { bg:"#0B162A", text:"#C83803", outline:"#FFFFFF" },
-  "Cincinnati Bengals": { bg:"#000000", text:"#FB4F14", outline:"#FFFFFF" },
-  "Cleveland Browns": { bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF" },
-  "Dallas Cowboys": { bg:"#002244", text:"#869397", outline:"#FFFFFF" },
-  "Denver Broncos": { bg:"#002244", text:"#FB4F14", outline:"#FFFFFF" },
-  "Detroit Lions": { bg:"#0076B6", text:"#B0B7BC", outline:"#000000" },
-  "Green Bay Packers": { bg:"#203731", text:"#FFB612", outline:"#FFFFFF" },
-  "Houston Texans": { bg:"#021018", text:"#A71930", outline:"#FFFFFF" },
-  "Indianapolis Colts": { bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF" },
-  "Jacksonville Jaguars": { bg:"#000000", text:"#006778", outline:"#D7A22A" },
-  "Kansas City Chiefs": { bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF" },
-  "Las Vegas Raiders": { bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF" },
-  "Los Angeles Chargers": { bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF" },
-  "Los Angeles Rams": { bg:"#003594", text:"#FFA300", outline:"#FFFFFF" },
-  "Miami Dolphins": { bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF" },
-  "Minnesota Vikings": { bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF" },
-  "New England Patriots": { bg:"#002244", text:"#C60C30", outline:"#B0B7BC" },
-  "New Orleans Saints": { bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF" },
-  "New York Giants": { bg:"#0B2265", text:"#A71930", outline:"#FFFFFF" },
-  "New York Jets": { bg:"#115740", text:"#FFFFFF", outline:"#000000" },
-  "Philadelphia Eagles": { bg:"#004851", text:"#A5ACAF", outline:"#000000" },
-  "Pittsburgh Steelers": { bg:"#000000", text:"#FFB612", outline:"#FFFFFF" },
-  "San Francisco 49ers": { bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF" },
-  "Seattle Seahawks": { bg:"#002244", text:"#69BE28", outline:"#A5ACAF" },
-  "Tampa Bay Buccaneers": { bg:"#A71930", text:"#34302B", outline:"#FFFFFF" },
-  "Tennessee Titans": { bg:"#002244", text:"#4B92DB", outline:"#C60C30" },
-  "Washington Commanders": { bg:"#5A1414", text:"#FFB612", outline:"#000000" }
+  "Arizona Cardinals": {
+    bg:"#000000", text:"#97233F", outline:"#FFFFFF",
+    logo:"team_logos/Arizona_Cardinals_logo.svg.png"
+  },
+  "Atlanta Falcons": {
+    bg:"#000000", text:"#A71930", outline:"#C7C9CB",
+    logo:"team_logos/Atlanta_Falcons_logo.svg.png"
+  },
+  "Baltimore Ravens": {
+    bg:"#000000", text:"#241773", outline:"#9E7C0C",
+    logo:"team_logos/Baltimore_Ravens_logo.svg.png"
+  },
+  "Buffalo Bills": {
+    bg:"#00338D", text:"#C60C30", outline:"#FFFFFF",
+    logo:"team_logos/Buffalo_Bills_logo.svg.png"
+  },
+  "Carolina Panthers": {
+    bg:"#000000", text:"#0085CA", outline:"#BFC0BF",
+    logo:"team_logos/Carolina_Panthers_logo.svg.png"
+  },
+  "Chicago Bears": {
+    bg:"#0B162A", text:"#C83803", outline:"#FFFFFF",
+    logo:"team_logos/Chicago_Bears_logo.svg.png"
+  },
+  "Cincinnati Bengals": {
+    bg:"#000000", text:"#FB4F14", outline:"#FFFFFF",
+    logo:"team_logos/Cincinnati_Bengals_logo.svg.png"
+  },
+  "Cleveland Browns": {
+    bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF",
+    logo:"team_logos/Cleveland_Browns_logo.svg.png"
+  },
+  "Dallas Cowboys": {
+    bg:"#002244", text:"#869397", outline:"#FFFFFF",
+    logo:"team_logos/Dallas_Cowboys_logo.svg.png"
+  },
+  "Denver Broncos": {
+    bg:"#002244", text:"#FB4F14", outline:"#FFFFFF",
+    logo:"team_logos/Denver_Broncos_logo.svg.png"
+  },
+  "Detroit Lions": {
+    bg:"#0076B6", text:"#B0B7BC", outline:"#000000",
+    logo:"team_logos/Detroit_Lions_logo.svg.png"
+  },
+  "Green Bay Packers": {
+    bg:"#203731", text:"#FFB612", outline:"#FFFFFF",
+    logo:"team_logos/Green_Bay_Packers_logo.svg.png"
+  },
+  "Houston Texans": {
+    bg:"#021018", text:"#A71930", outline:"#FFFFFF",
+    logo:"team_logos/Houston_Texans_logo.svg.png"
+  },
+  "Indianapolis Colts": {
+    bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF",
+    logo:"team_logos/Indianapolis_Colts_logo.svg.png"
+  },
+  "Jacksonville Jaguars": {
+    bg:"#000000", text:"#006778", outline:"#D7A22A",
+    logo:"team_logos/Jacksonville_Jaguars_logo.svg.png"
+  },
+  "Kansas City Chiefs": {
+    bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF",
+    logo:"team_logos/Kansas_City_Chiefs_logo.svg.png"
+  },
+  "Las Vegas Raiders": {
+    bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF",
+    logo:"team_logos/Las_Vegas_Raiders_logo.svg.png"
+  },
+  "Los Angeles Chargers": {
+    bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF",
+    logo:"team_logos/Los_Angeles_Chargers_logo.svg.png"
+  },
+  "Los Angeles Rams": {
+    bg:"#003594", text:"#FFA300", outline:"#FFFFFF",
+    logo:"team_logos/Los_Angeles_Rams_logo.svg.png"
+  },
+  "Miami Dolphins": {
+    bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF",
+    logo:"team_logos/Miami_Dolphins_logo.svg.png"
+  },
+  "Minnesota Vikings": {
+    bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF",
+    logo:"team_logos/Minnesota_Vikings_logo.svg.png"
+  },
+  "New England Patriots": {
+    bg:"#002244", text:"#C60C30", outline:"#B0B7BC",
+    logo:"team_logos/New_England_Patriots_logo.svg.png"
+  },
+  "New Orleans Saints": {
+    bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF",
+    logo:"team_logos/New_Orleans_Saints_logo.svg.png"
+  },
+  "New York Giants": {
+    bg:"#0B2265", text:"#A71930", outline:"#FFFFFF",
+    logo:"team_logos/New_York_Giants_logo.svg.png"
+  },
+  "New York Jets": {
+    bg:"#115740", text:"#FFFFFF", outline:"#000000",
+    logo:"team_logos/New_York_Jets_logo.svg.png"
+  },
+  "Philadelphia Eagles": {
+    bg:"#004851", text:"#A5ACAF", outline:"#000000",
+    logo:"team_logos/Philadelphia_Eagles_logo.svg.png"
+  },
+  "Pittsburgh Steelers": {
+    bg:"#000000", text:"#FFB612", outline:"#FFFFFF",
+    logo:"team_logos/Pittsburgh_Steelers_logo.svg.png"
+  },
+  "San Francisco 49ers": {
+    bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF",
+    logo:"team_logos/San_Francisco_49ers_logo.svg.png"
+  },
+  "Seattle Seahawks": {
+    bg:"#002244", text:"#69BE28", outline:"#A5ACAF",
+    logo:"team_logos/Seattle_Seahawks_logo.svg.png"
+  },
+  "Tampa Bay Buccaneers": {
+    bg:"#A71930", text:"#34302B", outline:"#FFFFFF",
+    logo:"team_logos/Tampa_Bay_Buccaneers_logo.svg.png"
+  },
+  "Tennessee Titans": {
+    bg:"#002244", text:"#4B92DB", outline:"#C60C30",
+    logo:"team_logos/Tennessee_Titans_logo.svg.png"
+  },
+  "Washington Commanders": {
+    bg:"#5A1414", text:"#FFB612", outline:"#000000",
+    logo:"team_logos/Washington_Commanders_logo.svg.png"
+  }
 };
 
 /* ===========================
@@ -542,7 +688,7 @@ const ctx = canvas.getContext("2d");
 const W = canvas.width;
 const H = canvas.height;
 
-/* Keep existing IDs for down/distance; use the first occurrences (team1Down). */
+/* Keep existing IDs for down/distance; use the first (team1Down). */
 function getDownDistanceEls() {
   const teamEl = document.querySelector(".team.possession");
   if (!teamEl) return {};
@@ -629,6 +775,33 @@ function recalculateDownAndDistance() {
 
   downEl.textContent = getDownLabel(down);
 }
+
+function updateTeamLogo(teamKey) {
+  const select = teamKey === "team1" ? team1 : team2;
+  const logoEl = document.getElementById(
+    teamKey === "team1" ? "team1Logo" : "team2Logo"
+  );
+
+  const teamName = select.value;
+  const logoPath = TEAM_COLORS[teamName]?.logo;
+
+  if (!logoPath) return;
+
+  logoEl.src = logoPath;
+  logoEl.style.display = "block";
+}
+
+team1.onchange = () => {
+  updateTeamLogo("team1");
+  drawField();
+};
+
+team2.onchange = () => {
+  updateTeamLogo("team2");
+  drawField();
+};
+
+
 
 
 
@@ -856,6 +1029,8 @@ function drawField() {
   drawLineOfScrimmage();
   drawFirstDownLine();
   drawFootball();
+  updateTeamLogo("team1");
+  updateTeamLogo("team2");
 }
 
 /* ===========================
@@ -1080,6 +1255,7 @@ function rollDefenseDice() {
     }
   );
 }
+
 
 </script>
 
