@@ -295,9 +295,9 @@
   100% { transform: scale(1); }
 }
 
-/* ===========================
+/*===================
    DICE PIPS (ADD ONLY)
-   =========================== */
+   =========================== 
 .pips {
   position: relative;
   width: 100%;
@@ -312,7 +312,7 @@
   background: currentColor;
 }
 
-/* Pip positions */
+/* Pip positions 
 .pip.tl { top: 8px; left: 8px; }
 .pip.tr { top: 8px; right: 8px; }
 .pip.bl { bottom: 8px; left: 8px; }
@@ -320,7 +320,7 @@
 .pip.ml { top: 50%; left: 8px; transform: translateY(-50%); }
 .pip.mr { top: 50%; right: 8px; transform: translateY(-50%); }
 .pip.c  { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-
+*/
 
     /* ===========================
        STATUS BAR
@@ -451,42 +451,41 @@
       <canvas id="field" width="1000" height="400"></canvas>
     </div>
 
-    <!-- ===========================
-         DICE PANEL
-         =========================== -->
-    <div id="dice-panel">
+<!-- ===========================
+     DICE PANEL
+     =========================== -->
+<div id="dice-panel">
 
-      <!-- OFFENSE -->
-      <div class="dice-box offense">
-        <div class="dice-title">Offense</div>
+  <!-- OFFENSE -->
+  <div class="dice-box offense">
+    <div class="dice-title">Offense</div>
 
-        <div class="dice-list">
-          <div class="die black"><div class="pips" id="offBlack"></div></div>
-          <div class="die yellow"><div class="pips" id="offYellow"></div></div>
-          <div class="die white"><div class="pips" id="offWhite"></div></div>
-        </div>
+    <div class="dice-list">
+      <div class="die black"><span id="offBlack">–</span></div>
+      <div class="die yellow"><span id="offYellow">–</span></div>
+      <div class="die white"><span id="offWhite">–</span></div>
+    </div>
 
-        <div class="dice-result">
-          Total: <span id="offenseResult">—</span>
-        </div>
-      </div>
-
-      <!-- DEFENSE -->
-      <div class="dice-box defense">
-        <div class="dice-title">Defense</div>
-
-        <div class="dice-list">
-          <div class="die green"><div class="pips" id="defGreen"></div></div>
-          <div class="die red"><div class="pips" id="defRed"></div></div>
-        </div>
-
-        <div class="dice-result">
-          Total: <span id="defenseResult">—</span>
-        </div>
-      </div>
-
+    <div class="dice-result">
+      Total: <span id="offenseResult">—</span>
     </div>
   </div>
+
+  <!-- DEFENSE -->
+  <div class="dice-box defense">
+    <div class="dice-title">Defense</div>
+
+    <div class="dice-list">
+      <div class="die green"><span id="defGreen">–</span></div>
+      <div class="die red"><span id="defRed">–</span></div>
+    </div>
+
+    <div class="dice-result">
+      Total: <span id="defenseResult">—</span>
+    </div>
+  </div>
+
+</div>
 
   <!-- ===========================
        CONTROLS + TEAM SELECTORS
@@ -1166,28 +1165,6 @@ function rollDie(faces) {
   return faces[Math.floor(Math.random() * faces.length)];
 }
 
-/* ===========================
-   DICE FACE RENDERING (PIPS)
-   =========================== */
-function renderDieFace(container, value) {
-  container.innerHTML = "";
-
-  const faces = {
-    1: ["c"],
-    2: ["tl", "br"],
-    3: ["tl", "c", "br"],
-    4: ["tl", "tr", "bl", "br"],
-    5: ["tl", "tr", "c", "bl", "br"],
-    6: ["tl", "tr", "ml", "mr", "bl", "br"]
-  };
-
-  (faces[value] || []).forEach(pos => {
-    const pip = document.createElement("div");
-    pip.className = `pip ${pos}`;
-    container.appendChild(pip);
-  });
-}
-
 function animateDice(dieEls, faceArrays, resultCallback) {
   const intervals = [];
   const results = [];
@@ -1199,7 +1176,7 @@ function animateDice(dieEls, faceArrays, resultCallback) {
 
     const interval = setInterval(() => {
       const face = faces[Math.floor(Math.random() * faces.length)];
-      renderDieFace(el, face);
+      el.textContent = face;
     }, 60 + Math.random() * 40);
 
     intervals.push(interval);
@@ -1210,7 +1187,7 @@ function animateDice(dieEls, faceArrays, resultCallback) {
       clearInterval(interval);
 
       const final = rollDie(faces);
-      renderDieFace(el, final);
+      el.textContent = final;
       results[i] = final;
 
       el.parentElement.classList.remove("rolling");
@@ -1237,7 +1214,8 @@ function rollOffenseDice() {
     [blackEl, yellowEl, whiteEl],
     [dice.offense.black, dice.offense.yellow, dice.offense.white],
     ([b, y, w]) => {
-      document.getElementById("offenseResult").textContent = b + y + w;
+      const total = (b * 10) + y + w;
+      document.getElementById("offenseResult").textContent = total;
     }
   );
 }
@@ -1254,9 +1232,9 @@ function rollDefenseDice() {
       document.getElementById("defenseResult").textContent = g + r;
     }
   );
-}
+  }
 
-
+    
 </script>
 
 </body>
