@@ -18,7 +18,7 @@
       align-items: center;
       padding-top: 16px;
     }
-
+/*
     #league-title {
       font-size: 38px;
       font-weight: bold;
@@ -26,13 +26,13 @@
       margin-bottom: 14px;
       text-align: center;
     }
-
+*/
     #scoreboard {
       display: flex;
       justify-content: center;
-      gap: 140px;
-      padding: 14px 40px;
-      margin-bottom: 20px;
+      gap: 80px;
+      padding: 7px 20px;
+      margin-bottom: 2px;
       border: 3px solid white;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.35);
@@ -63,11 +63,11 @@
     }
 
     .score {
-      margin-top: 8px;
+      margin-top: 0px;
       background: none;
       border: none;
       color: white;
-      font-size: 42px;
+      font-size: 60px;
       font-weight: bold;
       text-align: center;
       width: 80px;
@@ -139,7 +139,7 @@
       position: absolute;
       left: 20px;
       top: 140px;
-      width: 260px;
+      width: 190px;
       padding: 14px 16px;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.45);
@@ -202,7 +202,7 @@
     .dice-box {
       background: rgba(0,0,0,0.45);
       border: 2px solid rgba(255,255,255,0.4);
-      border-radius: 14px;
+      border-radius: 2px;
       padding: 12px;
       box-shadow: 0 0 18px rgba(0,0,0,0.6);
     }
@@ -295,6 +295,57 @@
   100% { transform: scale(1); }
 }
 
+/* Prevent grid from stretching offense dice */
+.dice-box.offense .die {
+  width: 66px;
+}
+
+/* === OFFENSE DICE: LARGE, TIGHT, NO OVERLAP === */
+.dice-box.offense .dice-list {
+  grid-template-columns: repeat(2, max-content);
+  gap: 6px 8px;               /* tight but safe */
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* Large square dice */
+.dice-box.offense .die {
+  width: 84px;
+  height: 84px;
+  font-size: 28px;
+}
+
+/* Bring top dice closer together horizontally */
+.dice-box.offense .dice-list .die:nth-child(1) {
+  margin-right: -6px;
+}
+
+.dice-box.offense .dice-list .die:nth-child(2) {
+  margin-left: -6px;
+}
+
+/* Bottom die: TOUCHING, NOT OVERLAPPING */
+.dice-box.offense .dice-list .die:nth-child(3) {
+  margin-top: -8px;           /* key change */
+}
+
+.dice-box .die span {
+  font-size: 50px;
+}
+
+/* Center and tighten DEFENSE dice row */
+.dice-box.defense .dice-list {
+  justify-content: center;
+  width: fit-content;
+  margin: 0 auto 10px;
+}
+
+/* Pull top offense dice together by collapsing grid gap */
+.dice-box.offense .dice-list {
+  column-gap: 2px;   /* almost touching */
+}
+
+
 /*===================
    DICE PIPS (ADD ONLY)
    =========================== 
@@ -362,9 +413,10 @@
 
     .team-down {
       margin-top: 6px;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: bold;
       opacity: 0;
+      color:#e6be00;
       transition: opacity 0.25s ease;
     }
 
@@ -399,13 +451,56 @@
   color: white;
 }
 
+/* DICE PANEL */
+
+#dice-panel {
+  width: 290px;
+  gap: 20px;
+}
+
+.dice-box {
+  padding: 2px;
+  background: rgba(0,0,0,0.55);
+  border: 2px solid rgba(255,255,255,0.55);
+  box-shadow: 0 0 22px rgba(0,0,0,0.75);
+}
+
+.dice-title {
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.die {
+  flex: 0 0 66px;
+  height: 66px;
+  border-radius: 10px;
+  font-size: 24px;
+}
+
+.die span {
+  font-size: 24px;
+}
+
+/* OFFENSE ONLY: 2 on top, 1 centered below (no HTML changes) */
+.dice-box.offense .dice-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.dice-box.offense .dice-list .die:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
   </style>
 
 </head>
 
 <body>
   <div id="game-container">
-  <div id="league-title">Baggaley Football League</div>
 
   <!-- ===========================
        SCOREBOARD
@@ -531,13 +626,11 @@
 <div class="controls-title">Team Select</div>
 
 <div class="control-row">
-  <span class="key">T1</span>
   <select id="team1" class="team-select">
   </select>
 </div>
 
 <div class="control-row">
-  <span class="key">T2</span>
   <select id="team2" class="team-select">
   </select>
 </div>
@@ -570,7 +663,7 @@ const TEAM_COLORS = {
   },
   "Chicago Bears": {
     bg:"#0B162A", text:"#C83803", outline:"#FFFFFF",
-    logo:"team_logos/Chicago_Bears_logo.svg.png"
+    logo:"team_logos/Chicago_Bears_logo_primary.svg.png"
   },
   "Cincinnati Bengals": {
     bg:"#000000", text:"#FB4F14", outline:"#FFFFFF",
@@ -582,7 +675,7 @@ const TEAM_COLORS = {
   },
   "Dallas Cowboys": {
     bg:"#002244", text:"#869397", outline:"#FFFFFF",
-    logo:"team_logos/Dallas_Cowboys_logo.svg.png"
+    logo:"team_logos/Dallas_Cowboys.svg.png"
   },
   "Denver Broncos": {
     bg:"#002244", text:"#FB4F14", outline:"#FFFFFF",
@@ -944,7 +1037,7 @@ function drawFirstDownLine() {
   if (firstDownYard === null) return;
 
   ctx.save();
-  ctx.strokeStyle = "#FFD400";
+  ctx.strokeStyle = (down === 4) ? "#b0122a" : "#FFD400";
   ctx.lineWidth = 4;
 
   const x = xOf(firstDownYard);
