@@ -495,10 +495,58 @@
   grid-column: 1 / -1;
 }
 
+/* ===========================
+   PLAY CLOCK (SCOREBOARD CENTER)
+   =========================== */
+
+#play-clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 120px;
+  margin: 0 24px;
+}
+
+.clock-label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+
+.clock-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#play-clock-value {
+  font-size: 30px;
+  font-weight: bold;
+  min-width: 72px;
+  text-align: center;
+}
+
+.clock-controls button {
+  background: #2a2f36;
+  border: 1px solid #444;
+  color: white;
+  font-size: 20px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.clock-controls button:hover {
+  background: #3a4048;
+}
+
+
+
   </style>
 
 </head>
-
 <body>
   <div id="game-container">
 
@@ -516,6 +564,17 @@
       <div class="team-down" id="team1Down">
         <span class="down-text">1st</span> &amp;
         <span class="distance-text">10</span>
+      </div>
+    </div>
+
+    <!-- PLAY CLOCK -->
+    <div id="play-clock-container">
+      <div class="clock-label">PLAY CLOCK</div>
+
+      <div class="clock-controls">
+        <button onclick="updatePlayClock(-0.5)">−</button>
+        <div id="play-clock-value">25.0</div>
+        <button onclick="updatePlayClock(0.5)">+</button>
       </div>
     </div>
 
@@ -634,6 +693,7 @@
   <select id="team2" class="team-select">
   </select>
 </div>
+
 
 
 <script>
@@ -815,6 +875,8 @@ let down = 1;
 let toGo = 10;
 let lineOfScrimmageYard = null;
 
+let playClock = 25.0;
+
 /* ===========================
    HELPERS
    =========================== */
@@ -893,7 +955,12 @@ team2.onchange = () => {
   drawField();
 };
 
-
+/*PLAY CLOCK FUNCTION*/
+function updatePlayClock(delta) {
+  playClock = Math.max(0, playClock + delta);
+  document.getElementById("play-clock-value").textContent =
+    playClock.toFixed(1);
+}
 
 
 
