@@ -27,23 +27,269 @@
       text-align: center;
     }
 */
+
+    /* ===========================
+       SCOREBOARD (REVAMPED LAYOUT)
+       =========================== */
+
     #scoreboard {
+      --sb-top-h: 120px;
+      --sb-bottom-h: 64px;
+      --sb-divider: 3px;
+      --sb-clock-w: 200px;
+
+      position: relative;
       display: flex;
-      justify-content: center;
-      gap: 80px;
-      padding: 7px 20px;
+
+      width: calc(1000px + 0px);
+      max-width: calc(100vw - 40px);
+      height: calc(var(--sb-top-h) + var(--sb-bottom-h));
+
       margin-bottom: 2px;
       border: 3px solid white;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.35);
       box-shadow: 0 0 18px rgba(0,0,0,0.6);
+      overflow: hidden;
     }
 
+    /* Horizontal divider between top and bottom */
+    #scoreboard::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--sb-top-h);
+      height: var(--sb-divider);
+      background: rgba(255,255,255,0.95);
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    /* Teams sit left and right in the TOP row via flex;
+       bottom row is positioned absolutely (so no top-row overlap, no weird lines). */
     .team {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .team-top {
+      height: var(--sb-top-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 10px 18px;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Bottom row boxes (positioned relative to #scoreboard to keep them inside the .team for your JS) */
+    .team-bottom {
+      position: absolute;
+      bottom: 0;
+      height: var(--sb-bottom-h);
+      width: calc(50% - (var(--sb-clock-w) / 2));
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 10px 12px;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.02);
+      z-index: 3;
+    }
+
+    .team1 .team-bottom { left: 0; }
+    .team2 .team-bottom { right: 0; }
+
+    /* Center divider (TOP ONLY) */
+    #scoreboard-center-divider {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      height: var(--sb-top-h);
+      width: 0;
+      z-index: 7;
+      pointer-events: none;
+    }
+
+    #scoreboard-center-divider::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--sb-divider);
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+    }
+
+    /* Team top area gets a color wash that fades toward center */
+.team-top {
+  position: relative;
+  overflow: hidden;
+
+  /* Replace your current background line with this (keeps your subtle dark base) */
+  background: rgba(255,255,255,0.02);
+}
+
+/* Put content above the gradient overlay */
+.team-top > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Gradient overlay */
+.team-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  /* Default (overridden by team1/team2 direction rules below) */
+  background: linear-gradient(
+    90deg,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.45) 0%,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.12) 45%,
+    rgba(0,0,0,0.00) 78%
+  );
+}
+
+/* Left team fades left -> center */
+.team1 .team-top::before {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.50) 0%,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.16) 48%,
+    rgba(0,0,0,0.00) 80%
+  );
+}
+
+/* Right team fades right -> center */
+.team2 .team-top::before {
+  background: linear-gradient(
+    270deg,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.50) 0%,
+    rgba(var(--team-bg-rgb, 255,255,255), 0.16) 48%,
+    rgba(0,0,0,0.00) 80%
+  );
+}
+
+
+    /* PLAY CLOCK (BOTTOM CENTER) */
+    #play-clock-container {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+
+      width: var(--sb-clock-w);
+      height: var(--sb-bottom-h);
+
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 260px;
+      justify-content: center;
+
+      border-left: var(--sb-divider) solid rgba(255,255,255,0.95);
+      border-right: var(--sb-divider) solid rgba(255,255,255,0.95);
+
+      background: rgba(255,255,255,0.02);
+      box-sizing: border-box;
+      z-index: 5;
+    }
+
+    /* Team logo & score sizing for the new layout */
+    .team-logo {
+      height: 100px;
+      display: none;
+      flex: 0 0 auto;
+    }
+
+    .score {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 86px;
+      font-weight: bold;
+      text-align: center;
+      width: 140px;
+      margin: 0;
+      padding: 0;
+      outline: none;
+      flex: 0 0 auto;
+    }
+
+    .clock-label {
+      font-size: 12px;
+      letter-spacing: 1px;
+      opacity: 0.75;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .clock-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #play-clock-value {
+      font-size: 30px;
+      font-weight: bold;
+      min-width: 72px;
+      text-align: center;
+    }
+
+    .clock-controls button {
+      background: #2a2f36;
+      border: 1px solid #444;
+      color: white;
+      font-size: 20px;
+      padding: 2px 10px;
+      cursor: pointer;
+    }
+
+    .clock-controls button:hover {
+      background: #3a4048;
+    }
+
+    /* ===========================
+       POSSESSION GLOW (ADAPTED)
+       =========================== */
+
+    .team {
+      position: relative;
+      border-radius: 14px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .team.possession .team-top {
+      box-shadow:
+        0 0 20px rgba(255,255,255,0.25),
+        0 0 35px var(--team-glow);
+      border-radius: 12px;
+    }
+
+    /* ===========================
+       DOWN & DISTANCE (BOTTOM ROW)
+       =========================== */
+
+    .team-down {
+      font-size: 26px;
+      font-weight: bold;
+      opacity: 0;
+      color:#e6be00;
+      transition: opacity 0.25s ease;
+    }
+
+    .team.possession .team-down {
+      opacity: 1;
     }
 
     .team-select {
@@ -60,17 +306,6 @@
     .team-select option {
       background-color: #20252b;
       color: white;
-    }
-
-    .score {
-      margin-top: 0px;
-      background: none;
-      border: none;
-      color: white;
-      font-size: 60px;
-      font-weight: bold;
-      text-align: center;
-      width: 80px;
     }
 
     canvas {
@@ -348,7 +583,7 @@
 
 /*===================
    DICE PIPS (ADD ONLY)
-   =========================== 
+   ===========================
 .pips {
   position: relative;
   width: 100%;
@@ -363,7 +598,7 @@
   background: currentColor;
 }
 
-/* Pip positions 
+/* Pip positions
 .pip.tl { top: 8px; left: 8px; }
 .pip.tr { top: 8px; right: 8px; }
 .pip.bl { bottom: 8px; left: 8px; }
@@ -390,159 +625,70 @@
       gap: 16px;
     }
 
-    /* ===========================
-       POSSESSION GLOW
-       =========================== */
-
-    .team {
-      position: relative;
-      padding: 10px 18px;
-      border-radius: 14px;
-      transition: box-shadow 0.3s ease;
-    }
-
-    .team.possession {
-      box-shadow:
-        0 0 20px rgba(255,255,255,0.25),
-        0 0 35px var(--team-glow);
-    }
-
-    /* ===========================
-       DOWN & DISTANCE UNDER TEAM
-       =========================== */
-
-    .team-down {
-      margin-top: 6px;
-      font-size: 20px;
-      font-weight: bold;
-      opacity: 0;
-      color:#e6be00;
-      transition: opacity 0.25s ease;
-    }
-
-    .team.possession .team-down {
-      opacity: 1;
-    }
-
     .team-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-.team-logo {
-  height: 100px;
-  margin-bottom: 6px;
-  display: none;
-}
+    #controls-panel .team-select {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11.5px;
+      appearance: auto;
+    }
 
-#controls-panel .team-select {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.5);
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 11.5px;
-  appearance: auto;
-}
+    #controls-panel .team-select option {
+      background: #20252b;
+      color: white;
+    }
 
-#controls-panel .team-select option {
-  background: #20252b;
-  color: white;
-}
+    /* DICE PANEL */
 
-/* DICE PANEL */
+    #dice-panel {
+      width: 290px;
+      gap: 20px;
+    }
 
-#dice-panel {
-  width: 290px;
-  gap: 20px;
-}
+    .dice-box {
+      padding: 2px;
+      background: rgba(0,0,0,0.55);
+      border: 2px solid rgba(255,255,255,0.55);
+      box-shadow: 0 0 22px rgba(0,0,0,0.75);
+    }
 
-.dice-box {
-  padding: 2px;
-  background: rgba(0,0,0,0.55);
-  border: 2px solid rgba(255,255,255,0.55);
-  box-shadow: 0 0 22px rgba(0,0,0,0.75);
-}
+    .dice-title {
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
 
-.dice-title {
-  font-size: 16px;
-  text-align: center;
-  margin-bottom: 12px;
-}
+    .die {
+      flex: 0 0 66px;
+      height: 66px;
+      border-radius: 10px;
+      font-size: 24px;
+    }
 
-.die {
-  flex: 0 0 66px;
-  height: 66px;
-  border-radius: 10px;
-  font-size: 24px;
-}
+    .die span {
+      font-size: 24px;
+    }
 
-.die span {
-  font-size: 24px;
-}
+    /* OFFENSE ONLY: 2 on top, 1 centered below (no HTML changes) */
+    .dice-box.offense .dice-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      justify-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
 
-/* OFFENSE ONLY: 2 on top, 1 centered below (no HTML changes) */
-.dice-box.offense .dice-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  justify-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.dice-box.offense .dice-list .die:nth-child(3) {
-  grid-column: 1 / -1;
-}
-
-/* ===========================
-   PLAY CLOCK (SCOREBOARD CENTER)
-   =========================== */
-
-#play-clock-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 120px;
-  margin: 0 24px;
-}
-
-.clock-label {
-  font-size: 12px;
-  letter-spacing: 1px;
-  opacity: 0.75;
-  margin-bottom: 4px;
-}
-
-.clock-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#play-clock-value {
-  font-size: 30px;
-  font-weight: bold;
-  min-width: 72px;
-  text-align: center;
-}
-
-.clock-controls button {
-  background: #2a2f36;
-  border: 1px solid #444;
-  color: white;
-  font-size: 20px;
-  padding: 2px 10px;
-  cursor: pointer;
-}
-
-.clock-controls button:hover {
-  background: #3a4048;
-}
-
-
+    .dice-box.offense .dice-list .die:nth-child(3) {
+      grid-column: 1 / -1;
+    }
 
   </style>
 
@@ -554,20 +700,26 @@
        SCOREBOARD
        =========================== -->
   <div id="scoreboard">
+
+    <!-- TEAM 1 -->
     <div class="team team1">
-      <div class="team-header">
+      <div class="team-top">
         <img class="team-logo" id="team1Logo" />
+        <input type="number" id="score1" class="score" value="0">
       </div>
 
-      <input type="number" id="score1" class="score" value="0">
-
-      <div class="team-down" id="team1Down">
-        <span class="down-text">1st</span> &amp;
-        <span class="distance-text">10</span>
+      <div class="team-bottom">
+        <div class="team-down" id="team1Down">
+          <span class="down-text">1st</span> &amp;
+          <span class="distance-text">10</span>
+        </div>
       </div>
     </div>
 
-    <!-- PLAY CLOCK -->
+    <!-- TOP CENTER DIVIDER -->
+    <div id="scoreboard-center-divider" aria-hidden="true"></div>
+
+    <!-- PLAY CLOCK (BOTTOM CENTER) -->
     <div id="play-clock-container">
       <div class="clock-label">PLAY CLOCK</div>
 
@@ -578,18 +730,21 @@
       </div>
     </div>
 
+    <!-- TEAM 2 -->
     <div class="team team2">
-      <div class="team-header">
+      <div class="team-top">
+        <input type="number" id="score2" class="score" value="0">
         <img class="team-logo" id="team2Logo" />
       </div>
 
-      <input type="number" id="score2" class="score" value="0">
-
-      <div class="team-down" id="team2Down">
-        <span class="down-text">1st</span> &amp;
-        <span class="distance-text">10</span>
+      <div class="team-bottom">
+        <div class="team-down" id="team2Down">
+          <span class="down-text">1st</span> &amp;
+          <span class="distance-text">10</span>
+        </div>
       </div>
     </div>
+
   </div>
 
   <!-- ===========================
@@ -694,9 +849,8 @@
   </select>
 </div>
 
-
-
 <script>
+
 /* ===========================
    TEAM COLORS and logos
    =========================== */
@@ -930,6 +1084,19 @@ function recalculateDownAndDistance() {
   downEl.textContent = getDownLabel(down);
 }
 
+function hexToRgbTriplet(hex) {
+  if (!hex) return "255,255,255";
+  let h = hex.replace("#", "").trim();
+  if (h.length === 3) h = h.split("").map(c => c + c).join("");
+  if (h.length !== 6) return "255,255,255";
+  const n = parseInt(h, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `${r},${g},${b}`;
+}
+
+
 function updateTeamLogo(teamKey) {
   const select = teamKey === "team1" ? team1 : team2;
   const logoEl = document.getElementById(
@@ -938,6 +1105,22 @@ function updateTeamLogo(teamKey) {
 
   const teamName = select.value;
   const logoPath = TEAM_COLORS[teamName]?.logo;
+  const teamEl = document.querySelector(teamKey === "team1" ? ".team1" : ".team2");
+    // Set team header gradient color to match endzone color (black -> use text/outline instead)
+  const colors = TEAM_COLORS[teamName] || {};
+  const rawHex = (colors.bg || "").toUpperCase();
+
+  const isBlack =
+    rawHex === "#000000" ||
+    rawHex === "#000" ||
+    rawHex === "BLACK";
+
+  const gradientHex = isBlack
+    ? (colors.text || colors.outline || "#FFFFFF")
+    : (colors.bg || colors.text || colors.outline || "#FFFFFF");
+
+  if (teamEl) teamEl.style.setProperty("--team-bg-rgb", hexToRgbTriplet(gradientHex));
+
 
   if (!logoPath) return;
 
