@@ -18,19 +18,6 @@
       align-items: center;
       padding-top: 16px;
     }
-/*
-    #league-title {
-      font-size: 38px;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      margin-bottom: 14px;
-      text-align: center;
-    }
-*/
-
-    /* ===========================
-       SCOREBOARD (REVAMPED LAYOUT)
-       =========================== */
 
     #scoreboard {
       --sb-top-h: 120px;
@@ -53,7 +40,7 @@
       overflow: hidden;
     }
 
-    /* Horizontal divider between top and bottom */
+
     #scoreboard::after {
       content: "";
       position: absolute;
@@ -66,8 +53,6 @@
       pointer-events: none;
     }
 
-    /* Teams sit left and right in the TOP row via flex;
-       bottom row is positioned absolutely (so no top-row overlap, no weird lines). */
     .team {
       flex: 1 1 0;
       min-width: 0;
@@ -86,7 +71,6 @@
       background: rgba(255,255,255,0.02);
     }
 
-    /* Bottom row boxes (positioned relative to #scoreboard to keep them inside the .team for your JS) */
     .team-bottom {
       position: absolute;
       bottom: 0;
@@ -106,7 +90,7 @@
     .team1 .team-bottom { left: 0; }
     .team2 .team-bottom { right: 0; }
 
-    /* Center divider (TOP ONLY) */
+
     #scoreboard-center-divider {
       position: absolute;
       left: 50%;
@@ -128,22 +112,22 @@
       background: rgba(255,255,255,0.95);
     }
 
-    /* Team top area gets a color wash that fades toward center */
+  
 .team-top {
   position: relative;
   overflow: hidden;
 
-  /* Replace your current background line with this (keeps your subtle dark base) */
+ 
   background: rgba(255,255,255,0.02);
 }
 
-/* Put content above the gradient overlay */
+
 .team-top > * {
   position: relative;
   z-index: 2;
 }
 
-/* Gradient overlay */
+
 .team-top::before {
   content: "";
   position: absolute;
@@ -151,7 +135,7 @@
   z-index: 1;
   pointer-events: none;
 
-  /* Default (overridden by team1/team2 direction rules below) */
+
   background: linear-gradient(
     90deg,
     rgba(var(--team-bg-rgb, 255,255,255), 0.45) 0%,
@@ -160,7 +144,6 @@
   );
 }
 
-/* Left team fades left -> center */
 .team1 .team-top::before {
   background: linear-gradient(
     90deg,
@@ -170,7 +153,7 @@
   );
 }
 
-/* Right team fades right -> center */
+
 .team2 .team-top::before {
   background: linear-gradient(
     270deg,
@@ -181,7 +164,6 @@
 }
 
 
-    /* PLAY CLOCK (BOTTOM CENTER) */
     #play-clock-container {
       position: absolute;
       left: 50%;
@@ -204,7 +186,6 @@
       z-index: 5;
     }
 
-    /* Team logo & score sizing for the new layout */
     .team-logo {
       height: 100px;
       display: none;
@@ -259,10 +240,6 @@
       background: #3a4048;
     }
 
-    /* ===========================
-       POSSESSION GLOW (ADAPTED)
-       =========================== */
-
     .team {
       position: relative;
       border-radius: 14px;
@@ -276,20 +253,58 @@
       border-radius: 12px;
     }
 
-    /* ===========================
-       DOWN & DISTANCE (BOTTOM ROW)
-       =========================== */
-
     .team-down {
       font-size: 26px;
       font-weight: bold;
       opacity: 0;
       color:#e6be00;
       transition: opacity 0.25s ease;
+      white-space: nowrap; 
     }
 
     .team.possession .team-down {
       opacity: 1;
+    }
+
+    .team-bottom-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 0 14px;
+      gap: 12px;
+    }
+
+    .team1 .team-bottom-inner { flex-direction: row; }
+    .team2 .team-bottom-inner { flex-direction: row-reverse; }
+
+    .timeouts {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+      flex: 0 0 auto;
+    }
+
+    .timeout-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.95);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+      cursor: pointer;
+    }
+
+    .timeout-dot.used {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .timeout-dot:active {
+      transform: scale(0.95);
     }
 
     .team-select {
@@ -367,14 +382,11 @@
       font-weight: bold;
     }
 
-    /* ===========================
-       CONTROLS PANEL
-       =========================== */
     #controls-panel {
       position: absolute;
       left: 20px;
       top: 140px;
-      width: 190px;
+      width: 220px;
       padding: 14px 16px;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.45);
@@ -382,6 +394,7 @@
       box-shadow: 0 0 18px rgba(0,0,0,0.6);
       color: white;
       font-family: Arial, sans-serif;
+      box-sizing: border-box;
     }
 
     .controls-title {
@@ -404,8 +417,20 @@
       margin-bottom: 0;
     }
 
+    
+    .key-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+
     .key {
-      min-width: 60px;
+      display: inline-flex;            
+      align-items: center;
+      justify-content: center;
+      min-width: 50px;
       text-align: center;
       padding: 6px 8px;
       border-radius: 8px;
@@ -414,16 +439,20 @@
       font-weight: bold;
       font-size: 14px;
       box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+      white-space: nowrap;      
+      line-height: 1;                  
+      box-sizing: border-box;
     }
 
     .desc {
       font-size: 14px;
       opacity: 0.9;
+      flex: 1 1 auto;
+      min-width: 0;
+      white-space: normal;
     }
+    
 
-    /* ===========================
-       DICE PANEL
-       =========================== */
     #dice-panel {
       position: absolute;
       right: 20px;
@@ -456,16 +485,16 @@
     }
 
     .die {
-  flex: 0 0 44px;
-  height: 44px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  font-weight: bold;
-  border: 2px solid white;
-  font-size: 18px;
+      flex: 0 0 44px;
+      height: 44px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: bold;
+      border: 2px solid white;
+      font-size: 18px;
     }
 
     .die {
@@ -474,8 +503,6 @@
         0 3px 6px rgba(0,0,0,0.4);
     }
 
-
-    /* Dice colors */
     .die.black { background:#000; color:white; }
     .die.yellow { background:#FFD400; color:#000; }
     .die.white { background:#FFF; color:#000; }
@@ -510,107 +537,75 @@
     }
 
     .die.rolling {
-  animation: rollSpin 0.6s linear infinite;
-}
+      animation: rollSpin 0.6s linear infinite;
+    }
 
-@keyframes rollSpin {
-  0%   { transform: rotate(0deg) scale(1); }
-  25%  { transform: rotate(90deg) scale(1.08); }
-  50%  { transform: rotate(180deg) scale(0.95); }
-  75%  { transform: rotate(270deg) scale(1.05); }
-  100% { transform: rotate(360deg) scale(1); }
-}
+    @keyframes rollSpin {
+      0%   { transform: rotate(0deg) scale(1); }
+      25%  { transform: rotate(90deg) scale(1.08); }
+      50%  { transform: rotate(180deg) scale(0.95); }
+      75%  { transform: rotate(270deg) scale(1.05); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
 
-.die.settle {
-  animation: diceSettle 0.18s ease-out;
-}
+    .die.settle {
+      animation: diceSettle 0.18s ease-out;
+    }
 
-@keyframes diceSettle {
-  0%   { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-/* Prevent grid from stretching offense dice */
-.dice-box.offense .die {
-  width: 66px;
-}
-
-/* === OFFENSE DICE: LARGE, TIGHT, NO OVERLAP === */
-.dice-box.offense .dice-list {
-  grid-template-columns: repeat(2, max-content);
-  gap: 6px 8px;               /* tight but safe */
-  justify-content: center;
-  margin-top: 8px;
-}
-
-/* Large square dice */
-.dice-box.offense .die {
-  width: 84px;
-  height: 84px;
-  font-size: 28px;
-}
-
-/* Bring top dice closer together horizontally */
-.dice-box.offense .dice-list .die:nth-child(1) {
-  margin-right: -6px;
-}
-
-.dice-box.offense .dice-list .die:nth-child(2) {
-  margin-left: -6px;
-}
-
-/* Bottom die: TOUCHING, NOT OVERLAPPING */
-.dice-box.offense .dice-list .die:nth-child(3) {
-  margin-top: -8px;           /* key change */
-}
-
-.dice-box .die span {
-  font-size: 50px;
-}
-
-/* Center and tighten DEFENSE dice row */
-.dice-box.defense .dice-list {
-  justify-content: center;
-  width: fit-content;
-  margin: 0 auto 10px;
-}
-
-/* Pull top offense dice together by collapsing grid gap */
-.dice-box.offense .dice-list {
-  column-gap: 2px;   /* almost touching */
-}
+    @keyframes diceSettle {
+      0%   { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
 
 
-/*===================
-   DICE PIPS (ADD ONLY)
-   ===========================
-.pips {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
+    .dice-box.offense .die {
+      width: 66px;
+    }
 
-.pip {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-}
+   
+    .dice-box.offense .dice-list {
+      grid-template-columns: repeat(2, max-content);
+      gap: 6px 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
 
-/* Pip positions
-.pip.tl { top: 8px; left: 8px; }
-.pip.tr { top: 8px; right: 8px; }
-.pip.bl { bottom: 8px; left: 8px; }
-.pip.br { bottom: 8px; right: 8px; }
-.pip.ml { top: 50%; left: 8px; transform: translateY(-50%); }
-.pip.mr { top: 50%; right: 8px; transform: translateY(-50%); }
-.pip.c  { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-*/
+  
+    .dice-box.offense .die {
+      width: 84px;
+      height: 84px;
+      font-size: 28px;
+    }
 
-    /* ===========================
-       STATUS BAR
-       =========================== */
+    .dice-box.offense .dice-list .die:nth-child(1) {
+      margin-right: -6px;
+    }
+
+    .dice-box.offense .dice-list .die:nth-child(2) {
+      margin-left: -6px;
+    }
+
+
+    .dice-box.offense .dice-list .die:nth-child(3) {
+      margin-top: -8px;   
+    }
+
+    .dice-box .die span {
+      font-size: 50px;
+    }
+
+  
+    .dice-box.defense .dice-list {
+      justify-content: center;
+      width: fit-content;
+      margin: 0 auto 10px;
+    }
+
+    
+    .dice-box.offense .dice-list {
+      column-gap: 2px;  
+    }
+
 
     #status-bar {
       display: flex;
@@ -646,7 +641,6 @@
       color: white;
     }
 
-    /* DICE PANEL */
 
     #dice-panel {
       width: 290px;
@@ -677,7 +671,6 @@
       font-size: 24px;
     }
 
-    /* OFFENSE ONLY: 2 on top, 1 centered below (no HTML changes) */
     .dice-box.offense .dice-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -696,12 +689,9 @@
 <body>
   <div id="game-container">
 
-  <!-- ===========================
-       SCOREBOARD
-       =========================== -->
   <div id="scoreboard">
 
-    <!-- TEAM 1 -->
+    
     <div class="team team1">
       <div class="team-top">
         <img class="team-logo" id="team1Logo" />
@@ -709,19 +699,28 @@
       </div>
 
       <div class="team-bottom">
-        <div class="team-down" id="team1Down">
-          <span class="down-text">1st</span> &amp;
-          <span class="distance-text">10</span>
+        <div class="team-bottom-inner">
+          <div class="team-down" id="team1Down">
+            <span class="down-text">1st</span> &amp;
+            <span class="distance-text">10</span>
+          </div>
+
+          
+          <div class="timeouts" id="team1Timeouts" aria-label="Team 1 timeouts">
+            <div class="timeout-dot" data-team="team1" data-timeout="0" title="Team 1 Timeout 1" role="button" tabindex="0"></div>
+            <div class="timeout-dot" data-team="team1" data-timeout="1" title="Team 1 Timeout 2" role="button" tabindex="0"></div>
+            <div class="timeout-dot" data-team="team1" data-timeout="2" title="Team 1 Timeout 3" role="button" tabindex="0"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- TOP CENTER DIVIDER -->
+    
     <div id="scoreboard-center-divider" aria-hidden="true"></div>
 
-    <!-- PLAY CLOCK (BOTTOM CENTER) -->
+    
     <div id="play-clock-container">
-      <div class="clock-label">PLAY CLOCK</div>
+      <div class="clock-label" id="quarter-label">Q1</div>
 
       <div class="clock-controls">
         <button onclick="updatePlayClock(-0.5)">−</button>
@@ -730,7 +729,7 @@
       </div>
     </div>
 
-    <!-- TEAM 2 -->
+    
     <div class="team team2">
       <div class="team-top">
         <input type="number" id="score2" class="score" value="0">
@@ -738,34 +737,39 @@
       </div>
 
       <div class="team-bottom">
-        <div class="team-down" id="team2Down">
-          <span class="down-text">1st</span> &amp;
-          <span class="distance-text">10</span>
+        <div class="team-bottom-inner">
+          <div class="team-down" id="team2Down">
+            <span class="down-text">1st</span> &amp;
+            <span class="distance-text">10</span>
+          </div>
+
+          
+          <div class="timeouts" id="team2Timeouts" aria-label="Team 2 timeouts">
+            <div class="timeout-dot" data-team="team2" data-timeout="0" title="Team 2 Timeout 1" role="button" tabindex="0"></div>
+            <div class="timeout-dot" data-team="team2" data-timeout="1" title="Team 2 Timeout 2" role="button" tabindex="0"></div>
+            <div class="timeout-dot" data-team="team2" data-timeout="2" title="Team 2 Timeout 3" role="button" tabindex="0"></div>
+          </div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- ===========================
-       MAIN PLAY AREA (FIELD + DICE)
-       =========================== -->
+  
   <div id="main-play-area">
 
-    <!-- Removed floating 1st & 10 box and Possession team box -->
+    
     <div id="status-bar" style="display:none;"></div>
 
-    <!-- FIELD -->
+   
     <div id="field-wrapper">
       <canvas id="field" width="1000" height="400"></canvas>
     </div>
 
-<!-- ===========================
-     DICE PANEL
-     =========================== -->
+
 <div id="dice-panel">
 
-  <!-- OFFENSE -->
+  
   <div class="dice-box offense">
     <div class="dice-title">Offense</div>
 
@@ -780,7 +784,7 @@
     </div>
   </div>
 
-  <!-- DEFENSE -->
+ 
   <div class="dice-box defense">
     <div class="dice-title">Defense</div>
 
@@ -796,9 +800,7 @@
 
 </div>
 
-  <!-- ===========================
-       CONTROLS + TEAM SELECTORS
-       =========================== -->
+  
   <div id="controls-panel">
     <div class="controls-title">Controls</div>
 
@@ -811,8 +813,24 @@
     </div>
 
     <div class="control-row">
-      <span class="key">↑</span>
-      <span class="desc">Set 1st &amp; 10</span>
+      <div class="key-group">
+        <span class="key">↑</span>
+        <span class="key">↓</span>
+      </div>
+      <span class="desc">Play Clock</span>
+    </div>
+
+    <div class="control-row">
+      <div class="key-group">
+        <span class="key">Q</span>
+        <span class="key">Shift+Q</span>
+      </div>
+      <span class="desc">Next/Prev Quarter</span>
+    </div>
+
+    <div class="control-row">
+      <span class="key">Enter</span>
+      <span class="desc">Reset 1st and 10</span>
     </div>
 
     <div class="control-row">
@@ -821,18 +839,18 @@
     </div>
 
     <div class="control-row">
-      <span class="key">Enter</span>
+      <span class="key">B</span>
       <span class="desc">Switch Possession</span>
     </div>
 
     <div class="control-row">
       <span class="key">O</span>
-      <span class="desc">Roll for Offense</span>
+      <span class="desc">Roll Offense</span>
     </div>
 
     <div class="control-row">
       <span class="key">D</span>
-      <span class="desc">Roll for Defense</span>
+      <span class="desc">Roll Defense</span>
     </div>
 
     <hr style="margin: 14px 0; opacity: 0.3;">
@@ -851,150 +869,49 @@
 
 <script>
 
-/* ===========================
-   TEAM COLORS and logos
-   =========================== */
+  
 const TEAM_COLORS = {
-  "Arizona Cardinals": {
-    bg:"#000000", text:"#97233F", outline:"#FFFFFF",
-    logo:"team_logos/Arizona_Cardinals_logo.svg.png"
-  },
-  "Atlanta Falcons": {
-    bg:"#000000", text:"#A71930", outline:"#C7C9CB",
-    logo:"team_logos/Atlanta_Falcons_logo.svg.png"
-  },
-  "Baltimore Ravens": {
-    bg:"#000000", text:"#241773", outline:"#9E7C0C",
-    logo:"team_logos/Baltimore_Ravens_logo.svg.png"
-  },
-  "Buffalo Bills": {
-    bg:"#00338D", text:"#C60C30", outline:"#FFFFFF",
-    logo:"team_logos/Buffalo_Bills_logo.svg.png"
-  },
-  "Carolina Panthers": {
-    bg:"#000000", text:"#0085CA", outline:"#BFC0BF",
-    logo:"team_logos/Carolina_Panthers_logo.svg.png"
-  },
-  "Chicago Bears": {
-    bg:"#0B162A", text:"#C83803", outline:"#FFFFFF",
-    logo:"team_logos/Chicago_Bears_logo_primary.svg.png"
-  },
-  "Cincinnati Bengals": {
-    bg:"#000000", text:"#FB4F14", outline:"#FFFFFF",
-    logo:"team_logos/Cincinnati_Bengals_logo.svg.png"
-  },
-  "Cleveland Browns": {
-    bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF",
-    logo:"team_logos/Cleveland_Browns_logo.svg.png"
-  },
-  "Dallas Cowboys": {
-    bg:"#002244", text:"#869397", outline:"#FFFFFF",
-    logo:"team_logos/Dallas_Cowboys.svg.png"
-  },
-  "Denver Broncos": {
-    bg:"#002244", text:"#FB4F14", outline:"#FFFFFF",
-    logo:"team_logos/Denver_Broncos_logo.svg.png"
-  },
-  "Detroit Lions": {
-    bg:"#0076B6", text:"#B0B7BC", outline:"#000000",
-    logo:"team_logos/Detroit_Lions_logo.svg.png"
-  },
-  "Green Bay Packers": {
-    bg:"#203731", text:"#FFB612", outline:"#FFFFFF",
-    logo:"team_logos/Green_Bay_Packers_logo.svg.png"
-  },
-  "Houston Texans": {
-    bg:"#021018", text:"#A71930", outline:"#FFFFFF",
-    logo:"team_logos/Houston_Texans_logo.svg.png"
-  },
-  "Indianapolis Colts": {
-    bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF",
-    logo:"team_logos/Indianapolis_Colts_logo.svg.png"
-  },
-  "Jacksonville Jaguars": {
-    bg:"#000000", text:"#006778", outline:"#D7A22A",
-    logo:"team_logos/Jacksonville_Jaguars_logo.svg.png"
-  },
-  "Kansas City Chiefs": {
-    bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF",
-    logo:"team_logos/Kansas_City_Chiefs_logo.svg.png"
-  },
-  "Las Vegas Raiders": {
-    bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF",
-    logo:"team_logos/Las_Vegas_Raiders_logo.svg.png"
-  },
-  "Los Angeles Chargers": {
-    bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF",
-    logo:"team_logos/Los_Angeles_Chargers_logo.svg.png"
-  },
-  "Los Angeles Rams": {
-    bg:"#003594", text:"#FFA300", outline:"#FFFFFF",
-    logo:"team_logos/Los_Angeles_Rams_logo.svg.png"
-  },
-  "Miami Dolphins": {
-    bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF",
-    logo:"team_logos/Miami_Dolphins_logo.svg.png"
-  },
-  "Minnesota Vikings": {
-    bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF",
-    logo:"team_logos/Minnesota_Vikings_logo.svg.png"
-  },
-  "New England Patriots": {
-    bg:"#002244", text:"#C60C30", outline:"#B0B7BC",
-    logo:"team_logos/New_England_Patriots_logo.svg.png"
-  },
-  "New Orleans Saints": {
-    bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF",
-    logo:"team_logos/New_Orleans_Saints_logo.svg.png"
-  },
-  "New York Giants": {
-    bg:"#0B2265", text:"#A71930", outline:"#FFFFFF",
-    logo:"team_logos/New_York_Giants_logo.svg.png"
-  },
-  "New York Jets": {
-    bg:"#115740", text:"#FFFFFF", outline:"#000000",
-    logo:"team_logos/New_York_Jets_logo.svg.png"
-  },
-  "Philadelphia Eagles": {
-    bg:"#004851", text:"#A5ACAF", outline:"#000000",
-    logo:"team_logos/Philadelphia_Eagles_logo.svg.png"
-  },
-  "Pittsburgh Steelers": {
-    bg:"#000000", text:"#FFB612", outline:"#FFFFFF",
-    logo:"team_logos/Pittsburgh_Steelers_logo.svg.png"
-  },
-  "San Francisco 49ers": {
-    bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF",
-    logo:"team_logos/San_Francisco_49ers_logo.svg.png"
-  },
-  "Seattle Seahawks": {
-    bg:"#002244", text:"#69BE28", outline:"#A5ACAF",
-    logo:"team_logos/Seattle_Seahawks_logo.svg.png"
-  },
-  "Tampa Bay Buccaneers": {
-    bg:"#A71930", text:"#34302B", outline:"#FFFFFF",
-    logo:"team_logos/Tampa_Bay_Buccaneers_logo.svg.png"
-  },
-  "Tennessee Titans": {
-    bg:"#002244", text:"#4B92DB", outline:"#C60C30",
-    logo:"team_logos/Tennessee_Titans_logo.svg.png"
-  },
-  "Washington Commanders": {
-    bg:"#5A1414", text:"#FFB612", outline:"#000000",
-    logo:"team_logos/Washington_Commanders_logo.svg.png"
-  }
+  "Arizona Cardinals": { bg:"#000000", text:"#97233F", outline:"#FFFFFF", logo:"team_logos/Arizona_Cardinals_logo.svg.png" },
+  "Atlanta Falcons": { bg:"#000000", text:"#A71930", outline:"#C7C9CB", logo:"team_logos/Atlanta_Falcons_logo.svg.png" },
+  "Baltimore Ravens": { bg:"#000000", text:"#241773", outline:"#9E7C0C", logo:"team_logos/Baltimore_Ravens_logo.svg.png" },
+  "Buffalo Bills": { bg:"#00338D", text:"#C60C30", outline:"#FFFFFF", logo:"team_logos/Buffalo_Bills_logo.svg.png" },
+  "Carolina Panthers": { bg:"#000000", text:"#0085CA", outline:"#BFC0BF", logo:"team_logos/Carolina_Panthers_logo.svg.png" },
+  "Chicago Bears": { bg:"#0B162A", text:"#C83803", outline:"#FFFFFF", logo:"team_logos/Chicago_Bears_logo_primary.svg.png" },
+  "Cincinnati Bengals": { bg:"#000000", text:"#FB4F14", outline:"#FFFFFF", logo:"team_logos/Cincinnati_Bengals_logo.svg.png" },
+  "Cleveland Browns": { bg:"#311D00", text:"#FF3C00", outline:"#FFFFFF", logo:"team_logos/Cleveland_Browns_logo.svg.png" },
+  "Dallas Cowboys": { bg:"#002244", text:"#869397", outline:"#FFFFFF", logo:"team_logos/Dallas_Cowboys.svg.png" },
+  "Denver Broncos": { bg:"#002244", text:"#FB4F14", outline:"#FFFFFF", logo:"team_logos/Denver_Broncos_logo.svg.png" },
+  "Detroit Lions": { bg:"#0076B6", text:"#B0B7BC", outline:"#000000", logo:"team_logos/Detroit_Lions_logo.svg.png" },
+  "Green Bay Packers": { bg:"#203731", text:"#FFB612", outline:"#FFFFFF", logo:"team_logos/Green_Bay_Packers_logo.svg.png" },
+  "Houston Texans": { bg:"#021018", text:"#A71930", outline:"#FFFFFF", logo:"team_logos/Houston_Texans_logo.svg.png" },
+  "Indianapolis Colts": { bg:"#002C5F", text:"#FFFFFF", outline:"#A5ACAF", logo:"team_logos/Indianapolis_Colts_logo.svg.png" },
+  "Jacksonville Jaguars": { bg:"#000000", text:"#006778", outline:"#D7A22A", logo:"team_logos/Jacksonville_Jaguars_logo.svg.png" },
+  "Kansas City Chiefs": { bg:"#B0122A", text:"#FFB81C", outline:"#FFFFFF", logo:"team_logos/Kansas_City_Chiefs_logo.svg.png" },
+  "Las Vegas Raiders": { bg:"#000000", text:"#A5ACAF", outline:"#FFFFFF", logo:"team_logos/Las_Vegas_Raiders_logo.svg.png" },
+  "Los Angeles Chargers": { bg:"#0080C6", text:"#FFC20E", outline:"#FFFFFF", logo:"team_logos/Los_Angeles_Chargers_logo.svg.png" },
+  "Los Angeles Rams": { bg:"#003594", text:"#FFA300", outline:"#FFFFFF", logo:"team_logos/Los_Angeles_Rams_logo.svg.png" },
+  "Miami Dolphins": { bg:"#008E97", text:"#FC4C02", outline:"#FFFFFF", logo:"team_logos/Miami_Dolphins_logo.svg.png" },
+  "Minnesota Vikings": { bg:"#4F2683", text:"#FFC62F", outline:"#FFFFFF", logo:"team_logos/Minnesota_Vikings_logo.svg.png" },
+  "New England Patriots": { bg:"#002244", text:"#C60C30", outline:"#B0B7BC", logo:"team_logos/New_England_Patriots_logo.svg.png" },
+  "New Orleans Saints": { bg:"#000000", text:"#D3BC8D", outline:"#FFFFFF", logo:"team_logos/New_Orleans_Saints_logo.svg.png" },
+  "New York Giants": { bg:"#0B2265", text:"#A71930", outline:"#FFFFFF", logo:"team_logos/New_York_Giants_logo.svg.png" },
+  "New York Jets": { bg:"#115740", text:"#FFFFFF", outline:"#000000", logo:"team_logos/New_York_Jets_logo.svg.png" },
+  "Philadelphia Eagles": { bg:"#004851", text:"#A5ACAF", outline:"#000000", logo:"team_logos/Philadelphia_Eagles_logo.svg.png" },
+  "Pittsburgh Steelers": { bg:"#000000", text:"#FFB612", outline:"#FFFFFF", logo:"team_logos/Pittsburgh_Steelers_logo.svg.png" },
+  "San Francisco 49ers": { bg:"#AA0000", text:"#B3995D", outline:"#FFFFFF", logo:"team_logos/San_Francisco_49ers_logo.svg.png" },
+  "Seattle Seahawks": { bg:"#002244", text:"#69BE28", outline:"#A5ACAF", logo:"team_logos/Seattle_Seahawks_logo.svg.png" },
+  "Tampa Bay Buccaneers": { bg:"#A71930", text:"#34302B", outline:"#FFFFFF", logo:"team_logos/Tampa_Bay_Buccaneers_logo.svg.png" },
+  "Tennessee Titans": { bg:"#002244", text:"#4B92DB", outline:"#C60C30", logo:"team_logos/Tennessee_Titans_logo.svg.png" },
+  "Washington Commanders": { bg:"#5A1414", text:"#FFB612", outline:"#000000", logo:"team_logos/Washington_Commanders_logo.svg.png" }
 };
 
-/* ===========================
-   CANVAS SETUP
-   =========================== */
+
 const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
 
 const W = canvas.width;
 const H = canvas.height;
 
-/* Keep existing IDs for down/distance; use the first (team1Down). */
 function getDownDistanceEls() {
   const teamEl = document.querySelector(".team.possession");
   if (!teamEl) return {};
@@ -1031,9 +948,90 @@ let lineOfScrimmageYard = null;
 
 let playClock = 25.0;
 
-/* ===========================
-   HELPERS
-   =========================== */
+
+let quarter = 1;     
+let overtime = 0;    
+
+function renderQuarterLabel() {
+  const el = document.getElementById("quarter-label");
+  if (!el) return;
+
+  if (overtime === 0) {
+    el.textContent = `Q${quarter}`;
+  } else {
+    el.textContent = overtime === 1 ? "OT" : `OT${overtime}`;
+  }
+}
+
+function advanceQuarter() {
+  if (overtime === 0) {
+    if (quarter < 4) quarter += 1;
+    else overtime = 1;
+  } else {
+    overtime += 1;
+  }
+  renderQuarterLabel();
+}
+
+function revertQuarter() {
+  
+  if (overtime > 0) {
+    if (overtime > 1) overtime -= 1;
+    else {
+      overtime = 0;
+      quarter = 4;
+    }
+  } else {
+    if (quarter > 1) quarter -= 1;
+  }
+  renderQuarterLabel();
+}
+
+
+const timeouts = {
+  team1: [true, true, true],
+  team2: [true, true, true]
+};
+
+function renderTimeouts(teamKey) {
+  const container = document.getElementById(teamKey === "team1" ? "team1Timeouts" : "team2Timeouts");
+  if (!container) return;
+
+  const dots = container.querySelectorAll(".timeout-dot");
+  dots.forEach(dot => {
+    const idx = parseInt(dot.getAttribute("data-timeout"), 10);
+    const available = !!timeouts[teamKey][idx];
+    dot.classList.toggle("used", !available);
+  });
+}
+
+function initTimeoutUI() {
+  const dots = document.querySelectorAll(".timeout-dot");
+  dots.forEach(dot => {
+    const toggle = () => {
+      const teamKey = dot.getAttribute("data-team");
+      const idx = parseInt(dot.getAttribute("data-timeout"), 10);
+      if (!teamKey || Number.isNaN(idx)) return;
+
+      timeouts[teamKey][idx] = !timeouts[teamKey][idx];
+      renderTimeouts(teamKey);
+    };
+
+    dot.addEventListener("click", toggle);
+
+    dot.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+
+  renderTimeouts("team1");
+  renderTimeouts("team2");
+}
+
+
 const xOf = yard => yard * P;
 const getMascot = team => team ? team.split(" ").pop().toUpperCase() : "";
 
@@ -1048,16 +1046,6 @@ function getGoalLineYard() {
   return possession === "team1" ? RIGHT_GOAL_LINE : LEFT_GOAL_LINE;
 }
 
-function getDownDistanceEls() {
-  const teamEl = document.querySelector(".team.possession");
-  if (!teamEl) return {};
-
-  return {
-    down: teamEl.querySelector(".down-text"),
-    distance: teamEl.querySelector(".distance-text")
-  };
-}
-
 function recalculateDownAndDistance() {
   if (firstDownYard === null) return;
 
@@ -1066,7 +1054,6 @@ function recalculateDownAndDistance() {
 
   const goalLine = getGoalLineYard();
 
-  // 1st and goal logic
   if (
     (possession === "team1" && firstDownYard >= goalLine) ||
     (possession === "team2" && firstDownYard <= goalLine)
@@ -1096,24 +1083,18 @@ function hexToRgbTriplet(hex) {
   return `${r},${g},${b}`;
 }
 
-
 function updateTeamLogo(teamKey) {
   const select = teamKey === "team1" ? team1 : team2;
-  const logoEl = document.getElementById(
-    teamKey === "team1" ? "team1Logo" : "team2Logo"
-  );
+  const logoEl = document.getElementById(teamKey === "team1" ? "team1Logo" : "team2Logo");
 
   const teamName = select.value;
   const logoPath = TEAM_COLORS[teamName]?.logo;
   const teamEl = document.querySelector(teamKey === "team1" ? ".team1" : ".team2");
-    // Set team header gradient color to match endzone color (black -> use text/outline instead)
+
   const colors = TEAM_COLORS[teamName] || {};
   const rawHex = (colors.bg || "").toUpperCase();
 
-  const isBlack =
-    rawHex === "#000000" ||
-    rawHex === "#000" ||
-    rawHex === "BLACK";
+  const isBlack = rawHex === "#000000" || rawHex === "#000" || rawHex === "BLACK";
 
   const gradientHex = isBlack
     ? (colors.text || colors.outline || "#FFFFFF")
@@ -1121,35 +1102,22 @@ function updateTeamLogo(teamKey) {
 
   if (teamEl) teamEl.style.setProperty("--team-bg-rgb", hexToRgbTriplet(gradientHex));
 
-
   if (!logoPath) return;
 
   logoEl.src = logoPath;
   logoEl.style.display = "block";
 }
 
-team1.onchange = () => {
-  updateTeamLogo("team1");
-  drawField();
-};
+team1.onchange = () => { updateTeamLogo("team1"); drawField(); };
+team2.onchange = () => { updateTeamLogo("team2"); drawField(); };
 
-team2.onchange = () => {
-  updateTeamLogo("team2");
-  drawField();
-};
 
-/*PLAY CLOCK FUNCTION*/
 function updatePlayClock(delta) {
   playClock = Math.max(0, playClock + delta);
-  document.getElementById("play-clock-value").textContent =
-    playClock.toFixed(1);
+  document.getElementById("play-clock-value").textContent = playClock.toFixed(1);
 }
 
 
-
-/* ===========================
-   FIELD DRAWING
-   =========================== */
 function drawBackground() {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, "#166b24");
@@ -1319,11 +1287,8 @@ function resetFirstDown() {
   lineOfScrimmageYard = ballYard;
   const goalLine = getGoalLineYard();
 
-  if (possession === "team1") {
-    firstDownYard = Math.min(ballYard + toGo, goalLine);
-  } else {
-    firstDownYard = Math.max(ballYard - toGo, goalLine);
-  }
+  if (possession === "team1") firstDownYard = Math.min(ballYard + toGo, goalLine);
+  else firstDownYard = Math.max(ballYard - toGo, goalLine);
 
   recalculateDownAndDistance();
   requestRedraw();
@@ -1333,7 +1298,6 @@ function requestRedraw() {
   requestAnimationFrame(drawField);
 }
 
-/* Moving Possession UI glow back and forth */
 function applyPossessionUI() {
   const team1El = document.querySelector(".team1");
   const team2El = document.querySelector(".team2");
@@ -1347,18 +1311,14 @@ function applyPossessionUI() {
   const colors = TEAM_COLORS[teamName];
 
   const glowColor =
-  colors?.bg && colors.bg !== "#000000"
-    ? colors.bg
-    : colors?.text || "#ffffff";
+    colors?.bg && colors.bg !== "#000000"
+      ? colors.bg
+      : colors?.text || "#ffffff";
 
-activeTeamEl.style.setProperty("--team-glow", glowColor);
-
+  activeTeamEl.style.setProperty("--team-glow", glowColor);
   activeTeamEl.classList.add("possession");
 }
 
-/* ===========================
-   MASTER DRAW FUNCTION TO CREATE EVERYTHING
-   =========================== */
 function drawField() {
   drawBackground();
   drawEndzone(team1.value, xOf(ENDZONE / 2), -Math.PI / 2);
@@ -1375,10 +1335,6 @@ function drawField() {
   updateTeamLogo("team2");
 }
 
-/* ===========================
-   key interactions
-   =========================== */
-
 Object.keys(TEAM_COLORS).forEach(t => {
   team1.add(new Option(t, t));
   team2.add(new Option(t, t));
@@ -1392,28 +1348,42 @@ drawField();
 
 team1.onchange = team2.onchange = drawField;
 
+initTimeoutUI();
+renderQuarterLabel();
+
 document.addEventListener("keydown", (e) => {
-  if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space", "Enter"].includes(e.key)) {
+  const tgt = e.target;
+  if (tgt && (
+      tgt.tagName === "INPUT" ||
+      tgt.tagName === "TEXTAREA" ||
+      tgt.tagName === "SELECT" ||
+      tgt.tagName === "BUTTON" ||
+      (tgt.closest && tgt.closest(".timeout-dot"))
+    )
+  ) {
+    return;
+  }
+
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "Enter"].includes(e.key) || e.code === "Space") {
     e.preventDefault();
   }
 
   const step = e.shiftKey ? 10 : 1;
   let didChange = false;
 
-  if (e.key === "ArrowLeft") {
-    ballYard = Math.max(0, ballYard - step);
-    didChange = true;
-  }
+  if (e.key === "ArrowLeft") { ballYard = Math.max(0, ballYard - step); didChange = true; }
+  if (e.key === "ArrowRight") { ballYard = Math.min(120, ballYard + step); didChange = true; }
 
-  if (e.key === "ArrowRight") {
-    ballYard = Math.min(120, ballYard + step);
-    didChange = true;
-  }
+  if (e.key === "ArrowUp") { updatePlayClock(e.shiftKey ? 5.0 : 0.5); return; }
+  if (e.key === "ArrowDown") { updatePlayClock(e.shiftKey ? -5.0 : -0.5); return; }
 
-  if (e.key === "ArrowUp") {
-    resetFirstDown();
+  if (e.key.toLowerCase() === "q") {
+    if (e.shiftKey) revertQuarter();
+    else advanceQuarter();
     return;
   }
+
+  if (e.key === "Enter") { resetFirstDown(); return; }
 
   if (e.code === "Space") {
     down = down < 4 ? down + 1 : 1;
@@ -1423,21 +1393,9 @@ document.addEventListener("keydown", (e) => {
     return;
   }
 
-  if (e.key === "Enter") {
-    e.preventDefault();
-    togglePossession();
-    return;
-  }
-
-  if (e.key.toLowerCase() === "o") {
-  rollOffenseDice();
-  return;
-}
-
-if (e.key.toLowerCase() === "d") {
-  rollDefenseDice();
-  return;
-}
+  if (e.key.toLowerCase() === "b") { togglePossession(); return; }
+  if (e.key.toLowerCase() === "o") { rollOffenseDice(); return; }
+  if (e.key.toLowerCase() === "d") { rollDefenseDice(); return; }
 
   if (didChange) {
     recalculateDownAndDistance();
@@ -1451,19 +1409,8 @@ function tryInitialDraw() {
 footballImg.onload = tryInitialDraw;
 bflLogo.onload = tryInitialDraw;
 
-// ===========================
-// POSSESSION LOGIC
-// ===========================
-
-/* Removed possessionTeam DOM element usage; keep function structure intact. */
-function getActiveTeamName(teamKey) {
-  const select = teamKey === "team1" ? team1 : team2;
-  const option = select.options[select.selectedIndex];
-  return option ? option.text : teamKey === "team1" ? "Team 1" : "Team 2";
-}
 
 function updatePossessionUI() {
-  // Possession pill removed; only apply glow now.
   applyPossessionUI();
 }
 
@@ -1475,22 +1422,13 @@ function togglePossession() {
   updatePossessionUI();
 
   if (firstDownYard !== null) {
-    firstDownYard =
-      possession === "team1"
-        ? ballYard + toGo
-        : ballYard - toGo;
+    firstDownYard = possession === "team1" ? ballYard + toGo : ballYard - toGo;
   }
 
   recalculateDownAndDistance();
   requestRedraw();
 }
 
-updatePossessionUI();
-applyPossessionUI();
-
-/* ===========================
-   DICE LOGIC (ANIMATED)
-   =========================== */
 
 const dice = {
   offense: {
@@ -1509,7 +1447,6 @@ function rollDie(faces) {
 }
 
 function animateDice(dieEls, faceArrays, resultCallback) {
-  const intervals = [];
   const results = [];
 
   dieEls.forEach((el, i) => {
@@ -1521,8 +1458,6 @@ function animateDice(dieEls, faceArrays, resultCallback) {
       const face = faces[Math.floor(Math.random() * faces.length)];
       el.textContent = face;
     }, 60 + Math.random() * 40);
-
-    intervals.push(interval);
 
     const stopTime = 450 + Math.random() * 300;
 
@@ -1547,7 +1482,6 @@ function animateDice(dieEls, faceArrays, resultCallback) {
   });
 }
 
-/* OFFENSE */
 function rollOffenseDice() {
   const blackEl = document.getElementById("offBlack");
   const yellowEl = document.getElementById("offYellow");
@@ -1563,7 +1497,6 @@ function rollOffenseDice() {
   );
 }
 
-/* DEFENSE */
 function rollDefenseDice() {
   const greenEl = document.getElementById("defGreen");
   const redEl = document.getElementById("defRed");
@@ -1575,8 +1508,7 @@ function rollDefenseDice() {
       document.getElementById("defenseResult").textContent = g + r;
     }
   );
-  }
-
+}
     
 </script>
 
