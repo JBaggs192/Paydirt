@@ -444,6 +444,26 @@
       box-sizing: border-box;
     }
 
+    /* NEW: make control keys actual clickable buttons while keeping identical styling */
+    #controls-panel button.key {
+      appearance: none;
+      -webkit-appearance: none;
+      font-family: inherit;
+      color: white;
+      cursor: pointer;
+    }
+    #controls-panel button.key:hover {
+      background: rgba(255,255,255,0.22);
+    }
+    #controls-panel button.key:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 2px 0 rgba(0,0,0,0.25);
+    }
+    #controls-panel button.key:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.85);
+      outline-offset: 2px;
+    }
+
     .desc {
       font-size: 14px;
       opacity: 0.9;
@@ -723,9 +743,11 @@
       <div class="clock-label" id="quarter-label">Q1</div>
 
       <div class="clock-controls">
-        <button onclick="updatePlayClock(-0.5)">−</button>
+        <!-- UPDATED: blur after click so keyboard controls don't get "stuck" on the button -->
+        <button onclick="updatePlayClock(-0.5); this.blur();">−</button>
         <div id="play-clock-value">25.0</div>
-        <button onclick="updatePlayClock(0.5)">+</button>
+        <!-- UPDATED: blur after click so keyboard controls don't get "stuck" on the button -->
+        <button onclick="updatePlayClock(0.5); this.blur();">+</button>
       </div>
     </div>
 
@@ -806,50 +828,50 @@
 
     <div class="control-row">
       <div class="key-group">
-        <span class="key">←</span>
-        <span class="key">→</span>
+        <button type="button" class="key" data-action="ballLeft" aria-label="Move ball left">←</button>
+        <button type="button" class="key" data-action="ballRight" aria-label="Move ball right">→</button>
       </div>
       <span class="desc">Move Ball</span>
     </div>
 
     <div class="control-row">
       <div class="key-group">
-        <span class="key">↑</span>
-        <span class="key">↓</span>
+        <button type="button" class="key" data-action="clockUp" aria-label="Increase play clock">↑</button>
+        <button type="button" class="key" data-action="clockDown" aria-label="Decrease play clock">↓</button>
       </div>
       <span class="desc">Play Clock</span>
     </div>
 
     <div class="control-row">
       <div class="key-group">
-        <span class="key">Q</span>
-        <span class="key">Shift+Q</span>
+        <button type="button" class="key" data-action="quarterNext" aria-label="Next quarter">Q</button>
+        <button type="button" class="key" data-action="quarterPrev" aria-label="Previous quarter">Shift+Q</button>
       </div>
       <span class="desc">Next/Prev Quarter</span>
     </div>
 
     <div class="control-row">
-      <span class="key">Enter</span>
+      <button type="button" class="key" data-action="resetFirstDown" aria-label="Reset first down">Enter</button>
       <span class="desc">Reset 1st and 10</span>
     </div>
 
     <div class="control-row">
-      <span class="key">Space</span>
+      <button type="button" class="key" data-action="advanceDown" aria-label="Advance down">Space</button>
       <span class="desc">Advance Down</span>
     </div>
 
     <div class="control-row">
-      <span class="key">B</span>
+      <button type="button" class="key" data-action="switchPossession" aria-label="Switch possession">B</button>
       <span class="desc">Switch Possession</span>
     </div>
 
     <div class="control-row">
-      <span class="key">O</span>
+      <button type="button" class="key" data-action="rollOffense" aria-label="Roll offense dice">O</button>
       <span class="desc">Roll Offense</span>
     </div>
 
     <div class="control-row">
-      <span class="key">D</span>
+      <button type="button" class="key" data-action="rollDefense" aria-label="Roll defense dice">D</button>
       <span class="desc">Roll Defense</span>
     </div>
 
@@ -1030,6 +1052,65 @@ function initTimeoutUI() {
   renderTimeouts("team1");
   renderTimeouts("team2");
 }
+
+
+/* NEW: shared action helpers (used by both keyboard and controls-panel buttons) */
+function moveBallBy(deltaYards) {
+  ballYard = Math.max(0, Math.min(120, ballYard + deltaYards));
+  recalculateDownAndDistance();
+  requestRedraw();
+}
+
+function advanceDown() {
+  down = down < 4 ? down + 1 : 1;
+  lineOfScrimmageYard = ballYard;
+  recalculateDownAndDistance();
+  requestRedraw();
+}
+
+function runControlAction(action) {
+  switch (action) {
+    case "ballLeft": moveBallBy(-1); return;
+    case "ballRight": moveBallBy(1); return;
+
+    case "clockUp": updatePlayClock(0.5); return;
+    case "clockDown": updatePlayClock(-0.5); return;
+
+    case "quarterNext": advanceQuarter(); return;
+    case "quarterPrev": revertQuarter(); return;
+
+    case "resetFirstDown": resetFirstDown(); return;
+    case "advanceDown": advanceDown(); return;
+
+    case "switchPossession": togglePossession(); return;
+
+    case "rollOffense": rollOffenseDice(); return;
+    case "rollDefense": rollDefenseDice(); return;
+
+    default: return;
+  }
+}
+
+function initControlsPanelButtons() {
+  const panel = document.getElementById("controls-panel");
+  if (!panel) return;
+
+  panel.querySelectorAll("button.key[data-action]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-action");
+      runControlAction(action);
+
+      /* NEW: immediately drop focus so arrow keys/etc work without clicking empty space */
+      btn.blur();
+    });
+  });
+}
+
+/* NEW: global safety net—any non-input button click drops focus (prevents "stuck" keyboard) */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest && e.target.closest("button");
+  if (btn) btn.blur();
+});
 
 
 const xOf = yard => yard * P;
@@ -1350,6 +1431,7 @@ team1.onchange = team2.onchange = drawField;
 
 initTimeoutUI();
 renderQuarterLabel();
+initControlsPanelButtons(); /* NEW */
 
 document.addEventListener("keydown", (e) => {
   const tgt = e.target;
