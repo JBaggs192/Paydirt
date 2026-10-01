@@ -86,6 +86,11 @@ function undo() {
 
 function roll(kind) {
   if (ui.isRolling(kind)) return;
+  // Viewers ask the host to roll, so everyone sees the same dice.
+  if (isViewer()) {
+    link?.send({ kind: "rollRequest", dice: kind });
+    return;
+  }
   const result = rollDice(kind);
   send({ kind: "roll", dice: kind, result });
   ui.animateRoll(kind, result).then(render);
@@ -176,8 +181,12 @@ function keyAction(e) {
   return KEYS[key] ? [KEYS[key]] : null;
 }
 
+// The only things a viewer can do.
+const VIEWER_ACTIONS = new Set(["rollOffense", "rollDefense"]);
+const allowed = name => session && (!isViewer() || VIEWER_ACTIONS.has(name));
+
 document.addEventListener("keydown", e => {
-  if (!session || isViewer()) return;
+  if (!session) return;
   const target = e.target instanceof Element ? e.target : document.body;
   if (target.closest("input, select, textarea")) return;
   // A keyboard-focused button should still activate normally.
@@ -187,14 +196,14 @@ document.addEventListener("keydown", e => {
   if (!match) return;
   e.preventDefault();
   const [name, options = {}] = match;
-  if (e.repeat && !REPEATABLE.has(name)) return;
+  if (!allowed(name) || (e.repeat && !REPEATABLE.has(name))) return;
   ACTIONS[name]({ shift: e.shiftKey, ...options });
   ui.flash(name, options);
 });
 
 document.addEventListener("click", e => {
   const target = e.target.closest("[data-action]");
-  if (!target || !session || isViewer()) return;
+  if (!target || !allowed(target.dataset.action)) return;
   const { action, points, side, index } = target.dataset;
   ACTIONS[action]({ shift: e.shiftKey, points: Number(points), side, index: Number(index) });
 });
@@ -250,6 +259,7 @@ function onRoomMessage(data, fromHost) {
   if (!data || typeof data !== "object") return;
   if (isHost()) {
     if (data.kind === "hello") publish(true); // someone joined: catch them up
+    else if (data.kind === "rollRequest" && (data.dice === "offense" || data.dice === "defense")) roll(data.dice);
     return;
   }
   if (!fromHost) return;
