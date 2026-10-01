@@ -37,6 +37,7 @@ export const TEAMS = {
 export const DEFAULT_TEAMS = { team1: "Detroit Lions", team2: "Minnesota Vikings" };
 
 export const mascot = name => name.split(" ").pop().toUpperCase();
+export const city = name => name.split(" ").slice(0, -1).join(" ").toUpperCase();
 
 // Black primaries vanish on the dark board, so those teams glow in their secondary color.
 export function accentColor(name) {
