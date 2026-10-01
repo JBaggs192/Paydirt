@@ -328,10 +328,9 @@ kbd {
 .viewing .watch-panel { display: block; }
 .viewing .controls,
 .viewing .host-only,
-.viewing .roll-btn,
 .viewing .clock-btn,
 .viewing .team-city::after { display: none; }
-.viewing :is(.timeout-dot, .team-identity, .score, #field, .dice-tray) { pointer-events: none; }
+.viewing :is(.timeout-dot, .team-identity, .score, #field) { pointer-events: none; }
 .watch-text {
   margin: 0 0 16px;
   color: var(--text-dim);
