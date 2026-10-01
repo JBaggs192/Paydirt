@@ -12,8 +12,8 @@ export const TIMEOUTS_PER_HALF = 3;
 
 export const RAZZLE_PER_GAME = 3; // house rule: Razzle Dazzle calls per team per game
 
-// Classic Paydirt play cards. Offense numbers 1-9 plus the Razzle Dazzle
-// house play; defense letters A-F.
+// Classic Paydirt play cards. Offense numbers 1-9, defense letters A-F; both
+// sides can also call QB Sneak, and offense has the Razzle Dazzle house play.
 export const PLAYS = {
   offense: [
     { id: "1", name: "Line Plunge" },
@@ -25,6 +25,7 @@ export const PLAYS = {
     { id: "7", name: "Medium Pass" },
     { id: "8", name: "Long Pass" },
     { id: "9", name: "Sideline Pass" },
+    { id: "QS", name: "QB Sneak" },
     { id: "RD", name: "Razzle Dazzle" },
   ],
   defense: [
@@ -34,6 +35,7 @@ export const PLAYS = {
     { id: "D", name: "Pass Prevent Short" },
     { id: "E", name: "Pass Prevent Long" },
     { id: "F", name: "Blitz" },
+    { id: "QS", name: "QB Sneak" }, // defense predicting the sneak
   ],
 };
 export const ROLES = ["offense", "defense"];

@@ -66,18 +66,33 @@ kbd {
 
 /* ---------- Layout ---------- */
 
+/* Wide screens: logo top-left and room/undo/new game top-right, beside the
+   scoreboard; the middle column narrows on short screens so the board, field
+   and play call all fit without scrolling. */
 .app {
+  --stage: clamp(640px, calc((100vh - 560px) * 2.5), 1000px);
   display: grid;
-  grid-template-columns: 270px minmax(0, 1000px) 290px;
+  grid-template-columns: 270px minmax(0, var(--stage)) 290px;
   grid-template-areas:
-    "top      top   top"
-    ".        board ."
+    "brand    board actions"
     "controls field dice";
   justify-content: center;
   align-items: start;
-  gap: 18px 26px;
-  padding: 18px 24px 40px;
+  gap: 16px 26px;
+  padding: 14px 24px 18px;
 }
+@supports (height: 100svh) {
+  .app { --stage: clamp(640px, calc((100svh - 560px) * 2.5), 1000px); }
+}
+/* Single player shows both sides' play cards, so leave a little more room. */
+body[data-mode="solo"] .app { --stage: clamp(640px, calc((100vh - 590px) * 2.5), 1000px); }
+@supports (height: 100svh) {
+  body[data-mode="solo"] .app { --stage: clamp(640px, calc((100svh - 590px) * 2.5), 1000px); }
+}
+.app > .topbar { display: contents; }
+.app .brand { grid-area: brand; align-self: start; }
+.app .topbar-actions { grid-area: actions; justify-self: end; flex-wrap: wrap; justify-content: flex-end; }
+.app .brand-text strong { white-space: normal; }
 
 .topbar      { grid-area: top; }
 .scoreboard  { grid-area: board; }
@@ -86,6 +101,9 @@ kbd {
 .dice-panel  { grid-area: dice; }
 
 @media (max-width: 1680px) {
+  .app > .topbar { display: flex; grid-area: top; }
+  .app .brand, .app .topbar-actions { grid-area: auto; }
+  .app .brand-text strong { white-space: nowrap; }
   .app {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
@@ -164,7 +182,7 @@ kbd {
 
 @media (max-width: 720px) {
   .brand img { width: 36px; height: 36px; }
-  .brand-text strong { font-size: 15px; line-height: 1.05; letter-spacing: 0.06em; white-space: normal; }
+  .app .brand-text strong { font-size: 15px; line-height: 1.05; letter-spacing: 0.06em; white-space: normal; }
   .ghost-btn .btn-label { display: none; }
   .brand-text span { display: none; }
   .ghost-btn { height: 34px; padding: 0 12px; font-size: 13px; }
@@ -1107,7 +1125,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 
 .field-frame {
   position: relative;
-  padding: 14px;
+  padding: 12px;
   border-radius: var(--radius-lg);
   background:
     radial-gradient(120% 140% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
@@ -1131,7 +1149,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   align-items: center;
   justify-content: center;
   gap: 8px 14px;
-  margin-top: 14px;
+  margin-top: 10px;
   color: var(--text-dim);
   font: 600 17px/1 var(--font-display);
   letter-spacing: 0.08em;
@@ -1157,7 +1175,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 
 .announce {
   position: absolute;
-  inset: 14px;
+  inset: 12px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1218,13 +1236,13 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 
 /* ---------- Play call ---------- */
 
-.playcall { margin-top: 16px; padding: 16px 18px 18px; }
+.playcall { margin-top: 12px; padding: 12px 16px 14px; }
 .pc-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .pc-head .ctl-title { margin: 0; }
 .pc-hint { margin: 0; color: var(--text-faint); font-size: 13px; text-align: right; }
@@ -1238,7 +1256,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 .pc-slot { min-width: 0; perspective: 900px; }
 .pc-card {
   position: relative;
-  height: 92px;
+  height: 66px;
   transform-style: preserve-3d;
   transition: transform 0.75s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
@@ -1262,7 +1280,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   grid-template-areas: "logo team check" "logo status check";
   align-items: center;
   column-gap: 12px;
-  padding: 12px 14px 12px 16px;
+  padding: 8px 12px 8px 14px;
   border: 1px solid var(--stroke);
   background: var(--fill);
   box-shadow: inset 4px 0 0 var(--accent, var(--stroke-strong));
@@ -1270,8 +1288,8 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 }
 .pc-logo {
   grid-area: logo;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.6)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
@@ -1292,7 +1310,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   align-self: start;
   overflow: hidden;
   color: var(--text-dim);
-  font: 800 20px/1.2 var(--font-display);
+  font: 800 19px/1.2 var(--font-display);
   letter-spacing: 0.04em;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -1304,8 +1322,8 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   display: grid;
   grid-area: check;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: rgba(61, 220, 132, 0.16);
   color: #3ddc84;
@@ -1327,8 +1345,8 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 10px 14px 10px 70px;
+  gap: 3px;
+  padding: 8px 14px 8px 60px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent, #445) 60%, #0b1016), #0b1016 78%);
   box-shadow: 0 12px 30px -12px var(--accent, #000), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
   transform: rotateY(180deg);
@@ -1345,18 +1363,21 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   top: 50%;
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  font: 800 26px/1 var(--font-display);
+  font: 800 22px/1 var(--font-display);
   transform: translateY(-50%);
 }
+/* Defense cards are names only */
+.pc-slot[data-role="defense"] .pc-reveal-code { display: none; }
+.pc-slot[data-role="defense"] .pc-back { padding-left: 14px; }
 .pc-reveal-name {
   max-width: 100%;
   overflow: hidden;
-  font: 800 26px/1.05 var(--font-display);
+  font: 800 23px/1.05 var(--font-display);
   letter-spacing: 0.04em;
   text-align: center;
   text-overflow: ellipsis;
@@ -1379,7 +1400,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   justify-content: center;
   gap: 6px;
   min-width: 112px;
-  height: 92px;
+  height: 66px;
   padding: 0 14px;
   border: 1px solid var(--stroke-strong);
   border-radius: 14px;
@@ -1470,23 +1491,30 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   .dice-tray.mini .die { --s: 26px; }
 }
 
-/* Play cards to choose from */
-.pc-picks { margin-top: 16px; }
-.pc-picks + .pc-picks { margin-top: 14px; }
+/* Play cards to choose from: a side label, then the cards */
+.pc-picks {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  margin-top: 12px;
+}
+.pc-picks + .pc-picks { margin-top: 8px; }
+.pc-picks .ctl-title { margin: 12px 0 0; }
 .pc-play-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 6px;
 }
 .pc-play {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
-  min-height: 46px;
-  padding: 6px 10px 6px 6px;
+  min-height: 38px;
+  padding: 4px 10px 4px 5px;
   border: 1px solid var(--stroke);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--fill);
   text-align: left;
   cursor: pointer;
@@ -1498,16 +1526,23 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   display: grid;
   flex: none;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
-  font: 800 17px/1 var(--font-display);
+  font: 800 15px/1 var(--font-display);
+}
+.pc-play[data-role="defense"] { padding-left: 12px; }
+.pc-play[data-role="defense"] .pc-name { font-size: 14px; }
+/* Wide screens: offense in two rows of six, defense in a single row. */
+@media (min-width: 1101px) {
+  .pc-picks[data-role="offense"] .pc-play-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .pc-picks[data-role="defense"] .pc-play-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 }
 .pc-name {
   flex: 1 1 auto;
   min-width: 0;
-  font: 700 16px/1.05 var(--font-display);
+  font: 700 15px/1.05 var(--font-display);
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -1532,7 +1567,9 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   .pc-hint { text-align: left; }
   .pc-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
   .pc-reveal { grid-column: 1 / -1; grid-row: 2; flex-direction: row; height: 48px; }
-  .pc-card { height: 84px; }
+  .pc-card { height: 70px; }
+  .pc-picks { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pc-picks .ctl-title { margin: 0; }
   .pc-front { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "logo team" "logo status"; column-gap: 8px; padding: 10px; }
   .pc-logo { width: 34px; height: 34px; }
   .pc-team { font-size: 10px; letter-spacing: 0.12em; }
