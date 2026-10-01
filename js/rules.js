@@ -131,10 +131,10 @@ export const recordRoll = (game, kind, roll) => update(game, g => { g.dice[kind]
 
 // ---- Derived values for display ----
 
-export const periodLabel = period =>
-  period <= 4 ? `Q${period}` : period === 5 ? "OT" : `OT${period - 4}`;
-
 const ORDINALS = ["1st", "2nd", "3rd", "4th"];
+
+export const periodLabel = period =>
+  period <= 4 ? `${ORDINALS[period - 1]} Qtr` : period === 5 ? "OT" : `${period - 4}OT`;
 
 export function downAndDistance(g) {
   const down = ORDINALS[g.down - 1];
@@ -144,9 +144,8 @@ export function downAndDistance(g) {
   return { down, distance: Math.max(0, yards) };
 }
 
-// Where the ball sits: { side, yardLine } or { side, endZone: true }; side is null at midfield.
-export function fieldPosition(g) {
-  const y = g.ballYard;
+// Where a yard sits: { side, yardLine } or { side, endZone: true }; side is null at midfield.
+export function positionOf(y) {
   if (y <= LEFT_GOAL_LINE) return { side: "team1", endZone: true };
   if (y >= RIGHT_GOAL_LINE) return { side: "team2", endZone: true };
   if (y === MIDFIELD) return { side: null, yardLine: 50 };
@@ -154,3 +153,5 @@ export function fieldPosition(g) {
     ? { side: "team1", yardLine: y - LEFT_GOAL_LINE }
     : { side: "team2", yardLine: RIGHT_GOAL_LINE - y };
 }
+
+export const fieldPosition = g => positionOf(g.ballYard);

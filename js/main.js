@@ -1,6 +1,7 @@
 // Wires input to the rules: every change goes through commit(), which keeps
 // undo history, saves to localStorage and re-renders.
 import * as rules from "./rules.js";
+import { accentColor, mascot } from "./teams.js";
 import { rollDice } from "./dice.js";
 import { createField } from "./field.js";
 import { createUI } from "./ui.js";
@@ -35,12 +36,13 @@ function save() {
 }
 
 function render() {
-  ui.render(game);
+  ui.render(game, { canUndo: history.length > 0 });
   field.draw(game);
 }
 
+// Returns whether anything changed.
 function commit(next, coalesceKey = null) {
-  if (JSON.stringify(next) === JSON.stringify(game)) return;
+  if (JSON.stringify(next) === JSON.stringify(game)) return false;
   const now = performance.now();
   const coalesce = coalesceKey && coalesceKey === lastCommit.key && now - lastCommit.at < COALESCE_MS;
   if (!coalesce) {
@@ -51,6 +53,7 @@ function commit(next, coalesceKey = null) {
   game = next;
   save();
   render();
+  return true;
 }
 
 function undo() {
@@ -74,14 +77,31 @@ const ACTIONS = {
   ballRight:        ({ shift }) => commit(rules.moveBall(game, shift ? 10 : 1), "ball"),
   clockUp:          ({ shift }) => commit(rules.adjustClock(game, shift ? 5 : 0.5), "clock"),
   clockDown:        ({ shift }) => commit(rules.adjustClock(game, shift ? -5 : -0.5), "clock"),
-  periodNext:       () => commit(rules.nextPeriod(game)),
+  periodNext:       () => {
+    if (!commit(rules.nextPeriod(game))) return;
+    ui.announce(game.period === 3 ? "Second half" : rules.periodLabel(game.period),
+      { sub: game.period === 3 ? "Timeouts reset" : "" });
+  },
   periodPrev:       () => commit(rules.prevPeriod(game)),
   firstAndTen:      () => commit(rules.firstAndTen(game)),
-  nextDown:         () => commit(rules.nextDown(game)),
+  nextDown:         () => {
+    const before = game;
+    if (!commit(rules.nextDown(game))) return;
+    const offense = game.teams[game.possession];
+    if (game.possession !== before.possession) {
+      ui.announce("Turnover on downs", { sub: `${mascot(offense)} ball`, color: accentColor(offense) });
+    } else if (before.firstDownYard !== null && game.down === 1) {
+      ui.announce("First down", { sub: mascot(offense), color: accentColor(offense) });
+    }
+  },
   switchPossession: () => commit(rules.switchPossession(game)),
   rollOffense:      () => roll("offense"),
   rollDefense:      () => roll("defense"),
-  score:            ({ points }) => commit(rules.addScore(game, game.possession, points)),
+  score:            ({ points }) => {
+    if (!commit(rules.addScore(game, game.possession, points))) return;
+    const team = game.teams[game.possession];
+    ui.announce(SCORE_CALLS[points], { sub: mascot(team), color: accentColor(team), big: points >= 3 });
+  },
   timeout:          ({ side, index }) => commit(rules.toggleTimeout(game, side, index)),
   undo,
   newGame: () => {
@@ -90,6 +110,8 @@ const ACTIONS = {
     }
   },
 };
+
+const SCORE_CALLS = { 6: "Touchdown", 3: "Field goal", 2: "Two points", 1: "Extra point" };
 
 const KEYS = {
   ArrowLeft: "ballLeft",
@@ -127,6 +149,7 @@ document.addEventListener("keydown", e => {
   const [name, options = {}] = match;
   if (e.repeat && !REPEATABLE.has(name)) return;
   ACTIONS[name]({ shift: e.shiftKey, ...options });
+  ui.flash(name, options.points);
 });
 
 document.addEventListener("click", e => {
@@ -148,7 +171,7 @@ for (const side of rules.SIDES) {
   score.addEventListener("blur", render);
   score.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === "Escape") score.blur(); });
 
-  const select = document.querySelector(`.team-select[data-side="${side}"]`);
+  const select = document.querySelector(`.team[data-side="${side}"] .team-select`);
   select.addEventListener("change", () => {
     commit(rules.setTeam(game, side, select.value));
     select.blur();

@@ -3,135 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1016">
   <title>Baggaley Football League!</title>
   <link rel="icon" href="football_clean.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@500;600;700&display=swap">
   <link rel="stylesheet" href="css/styles.css">
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="icon-football" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="12" rx="10.5" ry="6.2" transform="rotate(-45 12 12)" fill="currentColor"/>
+      <path d="M8.3 15.7 15.7 8.3M8.25 13.25l2.5 2.5M10 11.5l2.5 2.5M11.75 9.75l2.5 2.5" stroke="#1a1405" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
   <div class="app">
 
-    <header id="scoreboard" class="scoreboard">
-      <div class="team" data-side="team1">
-        <div class="team-top">
-          <img class="team-logo" alt="">
+    <header class="topbar">
+      <div class="brand">
+        <img src="BFL_logo.png" alt="" width="44" height="44">
+        <div class="brand-text">
+          <strong>Baggaley Football League</strong>
+          <span>Paydirt · Tabletop Football</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="ghost-btn" data-action="undo" aria-label="Undo" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="btn-label">Undo</span> <kbd>U</kbd>
+        </button>
+        <button type="button" class="ghost-btn" data-action="newGame">New game</button>
+      </div>
+    </header>
+
+    <header class="scoreboard" aria-label="Scoreboard">
+      <section class="team" data-side="team1">
+        <div class="team-main">
+          <div class="team-identity" title="Change team">
+            <img class="team-logo" alt="">
+            <div class="team-name">
+              <span class="team-city"></span>
+              <span class="team-mascot"></span>
+            </div>
+            <select class="team-select" aria-label="Left team"></select>
+          </div>
           <input class="score" type="number" inputmode="numeric" min="0" max="999" value="0" aria-label="Left team score">
         </div>
-        <div class="team-bottom">
-          <div class="team-down"></div>
-          <div class="timeouts" aria-label="Left team timeouts"></div>
+        <div class="team-strip">
+          <div class="timeouts" role="group" aria-label="Left team timeouts"></div>
+          <div class="possession-tag">
+            <svg aria-hidden="true"><use href="#icon-football"/></svg>
+            <span class="team-down"></span>
+          </div>
+        </div>
+      </section>
+
+      <div class="game-center">
+        <div class="period" id="period-label">1st Qtr</div>
+        <output id="clock-value" aria-label="Play clock">25.0</output>
+        <div class="clock-buttons">
+          <button type="button" class="clock-btn" data-action="clockDown" aria-label="Decrease play clock">−</button>
+          <span class="clock-label">Play clock</span>
+          <button type="button" class="clock-btn" data-action="clockUp" aria-label="Increase play clock">+</button>
         </div>
       </div>
 
-      <div class="game-clock">
-        <div class="period" id="period-label">Q1</div>
-        <div class="clock-controls">
-          <button type="button" data-action="clockDown" aria-label="Decrease play clock">−</button>
-          <output id="clock-value">25.0</output>
-          <button type="button" data-action="clockUp" aria-label="Increase play clock">+</button>
-        </div>
-      </div>
-
-      <div class="team" data-side="team2">
-        <div class="team-top">
-          <img class="team-logo" alt="">
+      <section class="team" data-side="team2">
+        <div class="team-main">
+          <div class="team-identity" title="Change team">
+            <img class="team-logo" alt="">
+            <div class="team-name">
+              <span class="team-city"></span>
+              <span class="team-mascot"></span>
+            </div>
+            <select class="team-select" aria-label="Right team"></select>
+          </div>
           <input class="score" type="number" inputmode="numeric" min="0" max="999" value="0" aria-label="Right team score">
         </div>
-        <div class="team-bottom">
-          <div class="team-down"></div>
-          <div class="timeouts" aria-label="Right team timeouts"></div>
+        <div class="team-strip">
+          <div class="timeouts" role="group" aria-label="Right team timeouts"></div>
+          <div class="possession-tag">
+            <svg aria-hidden="true"><use href="#icon-football"/></svg>
+            <span class="team-down"></span>
+          </div>
         </div>
-      </div>
+      </section>
     </header>
 
     <main class="field-area">
       <div class="field-frame">
         <canvas id="field" aria-label="Football field. Click or drag to spot the ball."></canvas>
+        <div class="announce" aria-live="polite"></div>
       </div>
-      <p id="field-status" class="field-status"></p>
+      <div class="drive-bar" id="drive-bar"></div>
     </main>
 
     <aside class="panel controls" aria-label="Controls">
-      <h2 class="panel-title">Controls</h2>
+      <section class="ctl-group">
+        <h2 class="ctl-title">Drive</h2>
+        <button type="button" class="action primary" data-action="nextDown" title="Past the marker = new 1st down. Short on 4th = turnover on downs.">
+          <span>Next down</span><kbd>Space</kbd>
+        </button>
+        <button type="button" class="action" data-action="firstAndTen"><span>1st &amp; 10 here</span><kbd>Enter</kbd></button>
+        <button type="button" class="action" data-action="switchPossession"><span>Change possession</span><kbd>B</kbd></button>
+      </section>
 
-      <div class="control-row">
-        <div class="key-group">
-          <button type="button" class="key" data-action="ballLeft" aria-label="Move ball left">←</button>
-          <button type="button" class="key" data-action="ballRight" aria-label="Move ball right">→</button>
+      <section class="ctl-group">
+        <div class="keypads">
+          <div class="keypad">
+            <h2 class="ctl-title">Ball</h2>
+            <div class="keypad-keys">
+              <button type="button" class="keycap" data-action="ballLeft" aria-label="Move ball left">←</button>
+              <button type="button" class="keycap" data-action="ballRight" aria-label="Move ball right">→</button>
+            </div>
+          </div>
+          <div class="keypad">
+            <h2 class="ctl-title">Clock</h2>
+            <div class="keypad-keys">
+              <button type="button" class="keycap" data-action="clockDown" aria-label="Decrease play clock">↓</button>
+              <button type="button" class="keycap" data-action="clockUp" aria-label="Increase play clock">↑</button>
+            </div>
+          </div>
+          <div class="keypad">
+            <h2 class="ctl-title">Quarter</h2>
+            <div class="keypad-keys">
+              <button type="button" class="keycap" data-action="periodPrev" aria-label="Previous quarter">⇧Q</button>
+              <button type="button" class="keycap" data-action="periodNext" aria-label="Next quarter">Q</button>
+            </div>
+          </div>
         </div>
-        <span class="desc">Move ball</span>
-      </div>
-      <div class="control-row">
-        <div class="key-group">
-          <button type="button" class="key" data-action="clockUp" aria-label="Increase play clock">↑</button>
-          <button type="button" class="key" data-action="clockDown" aria-label="Decrease play clock">↓</button>
+        <p class="ctl-note">Hold <kbd>⇧</kbd> for 10 yds or 5.0 sec. Click or drag the field to spot the ball.</p>
+      </section>
+
+      <section class="ctl-group">
+        <h2 class="ctl-title">Score <span class="score-for" id="score-for"></span></h2>
+        <div class="score-grid">
+          <button type="button" class="score-btn" data-action="score" data-points="6"><strong>+6</strong><span>TD · 6</span></button>
+          <button type="button" class="score-btn" data-action="score" data-points="3"><strong>+3</strong><span>FG · 3</span></button>
+          <button type="button" class="score-btn" data-action="score" data-points="2"><strong>+2</strong><span>2PT · 2</span></button>
+          <button type="button" class="score-btn" data-action="score" data-points="1"><strong>+1</strong><span>PAT · 1</span></button>
         </div>
-        <span class="desc">Play clock</span>
-      </div>
-      <div class="control-row">
-        <div class="key-group">
-          <button type="button" class="key" data-action="periodNext" aria-label="Next quarter">Q</button>
-          <button type="button" class="key" data-action="periodPrev" aria-label="Previous quarter">⇧Q</button>
-        </div>
-        <span class="desc">Next / prev quarter</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="firstAndTen">Enter</button>
-        <span class="desc">1st &amp; 10 here</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="nextDown">Space</button>
-        <span class="desc">Next down</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="switchPossession">B</button>
-        <span class="desc">Switch possession</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="rollOffense">O</button>
-        <span class="desc">Roll offense</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="rollDefense">D</button>
-        <span class="desc">Roll defense</span>
-      </div>
-      <div class="control-row">
-        <button type="button" class="key" data-action="undo">U</button>
-        <span class="desc">Undo <span class="muted">(⌘/Ctrl+Z)</span></span>
-      </div>
-
-      <p class="hint">Hold <kbd>⇧</kbd> for 10 yds / 5.0 on the clock. Click or drag the field to spot the ball.
-        Space past the marker = new 1st down; failing on 4th = turnover.</p>
-
-      <hr>
-
-      <h2 class="panel-title">Score <span class="muted">(offense)</span></h2>
-      <div class="score-buttons">
-        <button type="button" class="key" data-action="score" data-points="6">+6<small>TD · 6</small></button>
-        <button type="button" class="key" data-action="score" data-points="3">+3<small>FG · 3</small></button>
-        <button type="button" class="key" data-action="score" data-points="2">+2<small>2PT · 2</small></button>
-        <button type="button" class="key" data-action="score" data-points="1">+1<small>PAT · 1</small></button>
-      </div>
-
-      <hr>
-
-      <h2 class="panel-title">Teams</h2>
-      <select class="team-select" data-side="team1" aria-label="Left team"></select>
-      <select class="team-select" data-side="team2" aria-label="Right team"></select>
-
-      <button type="button" class="new-game" data-action="newGame">New game</button>
+      </section>
     </aside>
 
     <aside class="dice-panel" aria-label="Dice">
-      <section class="panel dice-box offense">
-        <h2 class="dice-title">Offense</h2>
-        <button type="button" class="dice-list" data-dice="offense" data-action="rollOffense" aria-label="Roll offense dice"></button>
-        <div class="dice-result">Total: <span data-total="offense">—</span></div>
+      <section class="panel dice-box" data-kind="offense">
+        <div class="dice-head">
+          <h2 class="ctl-title">Offense dice</h2>
+          <button type="button" class="roll-btn" data-action="rollOffense">Roll <kbd>O</kbd></button>
+        </div>
+        <button type="button" class="dice-tray" data-dice="offense" data-action="rollOffense" aria-label="Roll offense dice"></button>
+        <div class="dice-total">
+          <span class="dice-math" data-math="offense"></span>
+          <span class="dice-value" data-total="offense">—</span>
+        </div>
       </section>
-      <section class="panel dice-box defense">
-        <h2 class="dice-title">Defense</h2>
-        <button type="button" class="dice-list" data-dice="defense" data-action="rollDefense" aria-label="Roll defense dice"></button>
-        <div class="dice-result">Total: <span data-total="defense">—</span></div>
+      <section class="panel dice-box" data-kind="defense">
+        <div class="dice-head">
+          <h2 class="ctl-title">Defense dice</h2>
+          <button type="button" class="roll-btn" data-action="rollDefense">Roll <kbd>D</kbd></button>
+        </div>
+        <button type="button" class="dice-tray" data-dice="defense" data-action="rollDefense" aria-label="Roll defense dice"></button>
+        <div class="dice-total">
+          <span class="dice-math" data-math="defense"></span>
+          <span class="dice-value" data-total="defense">—</span>
+        </div>
       </section>
     </aside>
 
