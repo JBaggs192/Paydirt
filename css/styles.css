@@ -650,6 +650,60 @@ kbd {
   color: var(--gold-ink);
 }
 
+/* Timeout buttons */
+.timeout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.timeout-btn {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "team key" "pips key";
+  align-items: center;
+  gap: 6px 8px;
+  min-width: 0;
+  padding: 9px 9px 9px 14px;
+  overflow: hidden;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  background: var(--fill);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, opacity 0.15s;
+}
+/* Team-colored edge */
+.timeout-btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent, var(--gold));
+}
+.timeout-btn:hover:not(:disabled) { background: var(--fill-hover); border-color: var(--stroke-strong); }
+.timeout-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+.timeout-btn:disabled { opacity: 0.4; cursor: default; }
+.timeout-btn-team {
+  grid-area: team;
+  overflow: hidden;
+  font: 800 16px/1 var(--font-display);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.timeout-btn-pips { grid-area: pips; display: flex; gap: 4px; }
+.timeout-btn-pips i {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: #fff;
+}
+.timeout-btn-pips i.used { background: rgba(255, 255, 255, 0.18); }
+.timeout-btn kbd { grid-area: key; }
+
 /* Keyboard-key buttons */
 .keypads {
   display: grid;

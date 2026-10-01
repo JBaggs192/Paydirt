@@ -102,7 +102,12 @@ const ACTIONS = {
     const team = game.teams[game.possession];
     ui.announce(SCORE_CALLS[points], { sub: mascot(team), color: accentColor(team), big: points >= 3 });
   },
-  timeout:          ({ side, index }) => commit(rules.toggleTimeout(game, side, index)),
+  // Scoreboard bars toggle; the Timeouts buttons only ever spend one.
+  timeout:          ({ side, index }) => {
+    const before = game.timeouts[side];
+    if (commit(rules.toggleTimeout(game, side, index)) && game.timeouts[side] < before) announceTimeout(side);
+  },
+  callTimeout:      ({ side }) => { if (commit(rules.callTimeout(game, side))) announceTimeout(side); },
   undo,
   newGame: () => {
     if (confirm("Start a new game? Scores, downs, timeouts and the clock reset; teams stay.")) {
@@ -110,6 +115,13 @@ const ACTIONS = {
     }
   },
 };
+
+function announceTimeout(side) {
+  const team = game.teams[side];
+  const left = game.timeouts[side];
+  const remaining = left === 0 ? "no timeouts left" : `${left} left`;
+  ui.announce("Timeout", { sub: `${mascot(team)} · ${remaining}`, color: accentColor(team) });
+}
 
 const SCORE_CALLS = { 6: "Touchdown", 3: "Field goal", 2: "Two points", 1: "Extra point" };
 
@@ -133,6 +145,8 @@ function keyAction(e) {
   if (e.metaKey || e.ctrlKey) return key === "z" ? ["undo"] : null;
   if (e.altKey) return null;
   if (key === "q") return [e.shiftKey ? "periodPrev" : "periodNext"];
+  // T: offense calls timeout; Shift+T: defense.
+  if (key === "t") return ["callTimeout", { side: e.shiftKey ? rules.other(game.possession) : game.possession }];
   if (key in SCORE_KEYS) return ["score", { points: SCORE_KEYS[key] }];
   return KEYS[key] ? [KEYS[key]] : null;
 }
@@ -149,7 +163,7 @@ document.addEventListener("keydown", e => {
   const [name, options = {}] = match;
   if (e.repeat && !REPEATABLE.has(name)) return;
   ACTIONS[name]({ shift: e.shiftKey, ...options });
-  ui.flash(name, options.points);
+  ui.flash(name, options);
 });
 
 document.addEventListener("click", e => {

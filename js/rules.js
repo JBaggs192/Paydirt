@@ -119,6 +119,9 @@ export const toggleTimeout = (game, side, index) => update(game, g => {
   g.timeouts[side] = clamp(index < left ? left - 1 : left + 1, 0, TIMEOUTS_PER_HALF);
 });
 
+export const callTimeout = (game, side) =>
+  update(game, g => { g.timeouts[side] = Math.max(0, g.timeouts[side] - 1); });
+
 export const setScore = (game, side, value) =>
   update(game, g => { g.score[side] = clamp(Math.trunc(Number(value)) || 0, 0, 999); });
 
