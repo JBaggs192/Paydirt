@@ -1,6 +1,6 @@
 // Everything outside the canvas: scoreboard, drive bar, dice, controls and banners.
 import { TEAMS, teamData, mascot, city, accentColor, isLight } from "./teams.js";
-import { SIDES, TIMEOUTS_PER_HALF, downAndDistance, fieldPosition, periodLabel } from "./rules.js";
+import { SIDES, TIMEOUTS_PER_HALF, downAndDistance, fieldPosition, periodLabel, razzleActive } from "./rules.js";
 import { DICE, createDie, setDie, throwDie, describeRoll } from "./dice.js";
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -110,7 +110,33 @@ export function createUI() {
   const scoreFor = $("#score-for");
   const announcer = $(".announce");
   const undoButtons = $$('[data-action="undo"]');
-  const rolling = { offense: false, defense: false };
+  const rolling = Object.fromEntries(Object.keys(DICE).map(kind => [kind, false]));
+  const ROLL_KEY = { offense: "O", defense: "D", razzleOffense: "⇧O", razzleDefense: "⇧D" };
+  const razzleBoxes = $$(".dice-box.razzle");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  let razzleOn = false;
+
+  // Razzle Dazzle dice pop in once it's revealed and fade out at the next snap.
+  function renderRazzle(game) {
+    razzleOn = razzleActive(game);
+    for (const box of razzleBoxes) {
+      if (razzleOn && box.hidden) {
+        box.hidden = false;
+        box.classList.remove("leaving");
+        replay(box, "arrive");
+      } else if (!razzleOn && !box.hidden && !box.classList.contains("leaving")) {
+        if (reducedMotion.matches) {
+          box.hidden = true;
+          continue;
+        }
+        box.classList.add("leaving");
+        box.addEventListener("animationend", () => {
+          box.classList.remove("leaving");
+          if (!razzleOn) box.hidden = true;
+        }, { once: true });
+      }
+    }
+  }
 
   function renderTeam(game, side) {
     const t = teams[side];
@@ -185,7 +211,7 @@ export function createUI() {
     d.total.classList.toggle("empty", !roll);
     d.math.textContent = roll
       ? `${describeRoll(kind, roll.values)} =`
-      : `Tap the dice or press ${kind === "offense" ? "O" : "D"}`;
+      : `Tap the dice or press ${ROLL_KEY[kind]}`;
   }
 
   return {
@@ -193,6 +219,7 @@ export function createUI() {
       SIDES.forEach(side => renderTeam(game, side));
       renderDrive(game);
       Object.keys(DICE).forEach(kind => renderDice(game, kind));
+      renderRazzle(game);
       clock.textContent = game.clock.toFixed(1);
       period.textContent = periodLabel(game.period);
       undoButtons.forEach(button => { button.disabled = !canUndo; });
@@ -226,7 +253,7 @@ export function createUI() {
       if (points) selector += `[data-points="${points}"]`;
       if (side) selector += `[data-side="${side}"]`;
       $$(selector).forEach(button => {
-        if (button.matches(".action, .keycap, .score-btn, .roll-btn, .ghost-btn, .timeout-btn")) replay(button, "flash");
+        if (button.matches(".action, .keycap, .score-btn, .roll-btn, .ghost-btn, .timeout-btn, .pc-reveal")) replay(button, "flash");
       });
     },
   };

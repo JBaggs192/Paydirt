@@ -111,6 +111,60 @@
         <div class="announce" aria-live="polite"></div>
       </div>
       <div class="drive-bar" id="drive-bar"></div>
+
+      <section class="panel playcall" id="playcall" aria-label="Play call">
+        <div class="pc-head">
+          <h2 class="ctl-title">Play call</h2>
+          <p class="pc-hint" id="pc-hint"></p>
+        </div>
+
+        <div class="pc-board">
+          <div class="pc-slot" data-role="offense">
+            <div class="pc-card">
+              <div class="pc-face pc-front">
+                <img class="pc-logo" alt="">
+                <span class="pc-team"></span>
+                <span class="pc-status"></span>
+                <span class="pc-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="pc-face pc-back">
+                <span class="pc-team-back">Offense</span>
+                <span class="pc-reveal-code"></span>
+                <span class="pc-reveal-name"></span>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="pc-reveal" id="pc-reveal" data-action="revealCall" disabled>
+            <span>Reveal</span><kbd>R</kbd>
+          </button>
+
+          <div class="pc-slot" data-role="defense">
+            <div class="pc-card">
+              <div class="pc-face pc-front">
+                <img class="pc-logo" alt="">
+                <span class="pc-team"></span>
+                <span class="pc-status"></span>
+                <span class="pc-check" aria-hidden="true">✓</span>
+              </div>
+              <div class="pc-face pc-back">
+                <span class="pc-team-back">Defense</span>
+                <span class="pc-reveal-code"></span>
+                <span class="pc-reveal-name"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pc-picks" data-role="offense" hidden>
+          <h3 class="ctl-title">Your offense call</h3>
+          <div class="pc-play-grid"></div>
+        </div>
+        <div class="pc-picks" data-role="defense" hidden>
+          <h3 class="ctl-title">Your defense call</h3>
+          <div class="pc-play-grid"></div>
+        </div>
+      </section>
     </main>
 
     <aside class="panel controls" aria-label="Controls">
@@ -189,6 +243,17 @@
           <span class="dice-value" data-total="offense">—</span>
         </div>
       </section>
+      <section class="panel dice-box razzle" data-kind="razzleOffense" hidden>
+        <div class="dice-head">
+          <h2 class="ctl-title"><span class="razzle-star" aria-hidden="true">★</span> Razzle Dazzle · Offense</h2>
+          <button type="button" class="roll-btn" data-action="rollRazzleOffense">Roll <kbd>⇧O</kbd></button>
+        </div>
+        <button type="button" class="dice-tray" data-dice="razzleOffense" data-action="rollRazzleOffense" aria-label="Roll offense Razzle Dazzle dice"></button>
+        <div class="dice-total">
+          <span class="dice-math" data-math="razzleOffense"></span>
+          <span class="dice-value" data-total="razzleOffense">—</span>
+        </div>
+      </section>
       <section class="panel dice-box" data-kind="defense">
         <div class="dice-head">
           <h2 class="ctl-title">Defense dice</h2>
@@ -198,6 +263,17 @@
         <div class="dice-total">
           <span class="dice-math" data-math="defense"></span>
           <span class="dice-value" data-total="defense">—</span>
+        </div>
+      </section>
+      <section class="panel dice-box razzle" data-kind="razzleDefense" hidden>
+        <div class="dice-head">
+          <h2 class="ctl-title"><span class="razzle-star" aria-hidden="true">★</span> Razzle Dazzle · Defense</h2>
+          <button type="button" class="roll-btn" data-action="rollRazzleDefense">Roll <kbd>⇧D</kbd></button>
+        </div>
+        <button type="button" class="dice-tray" data-dice="razzleDefense" data-action="rollRazzleDefense" aria-label="Roll defense Razzle Dazzle dice"></button>
+        <div class="dice-total">
+          <span class="dice-math" data-math="razzleDefense"></span>
+          <span class="dice-value" data-total="razzleDefense">—</span>
         </div>
       </section>
     </aside>
