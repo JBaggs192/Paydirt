@@ -28,6 +28,30 @@ function loadImage(src, onload) {
 
 const ready = img => img.complete && img.naturalWidth > 0;
 
+// Bounding box of an image's visible pixels, so off-centre artwork can be
+// centred on what you actually see rather than on its transparent padding.
+function visibleBounds(img) {
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  const t = c.getContext("2d");
+  t.drawImage(img, 0, 0);
+  const { data } = t.getImageData(0, 0, c.width, c.height);
+  let minX = c.width, minY = c.height, maxX = -1, maxY = -1;
+  for (let y = 0; y < c.height; y++) {
+    for (let x = 0; x < c.width; x++) {
+      if (data[(y * c.width + x) * 4 + 3] > 16) {
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+  if (maxX < 0) return { x: 0, y: 0, w: c.width, h: c.height };
+  return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
 function makeNoise(ctx) {
   const tile = document.createElement("canvas");
   tile.width = tile.height = 128;
@@ -55,11 +79,15 @@ export function createField(canvas, { onPickYard }) {
   let frame = 0;
   let lastFrame = 0;
   let hoverYard = null;
+  let logoBounds = null;
 
   const schedule = () => { if (game && !frame) frame = requestAnimationFrame(paint); };
   const images = {
     football: loadImage("football_clean.png", schedule),
-    logo: loadImage("BFL_logo.png", schedule),
+    logo: loadImage("BFL_logo.png", () => {
+      try { logoBounds = visibleBounds(images.logo); } catch { /* fall back to the full image */ }
+      schedule();
+    }),
   };
   // Canvas text only uses a web font once it has loaded.
   document.fonts?.load(`800 64px ${FONT}`).then(schedule, () => {});
@@ -83,13 +111,14 @@ export function createField(canvas, { onPickYard }) {
 
     ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
     drawTurf();
-    drawEndzone(game.teams.team1, LEFT_GOAL_LINE / 2, -Math.PI / 2);
-    drawEndzone(game.teams.team2, RIGHT_GOAL_LINE + ENDZONE_YARDS / 2, Math.PI / 2);
     drawYardLines();
     drawHashMarks();
     drawNumbers();
     drawMidfieldLogo();
     drawLighting();
+    drawEndzone(game.teams.team1, LEFT_GOAL_LINE / 2, -Math.PI / 2);
+    drawEndzone(game.teams.team2, RIGHT_GOAL_LINE + ENDZONE_YARDS / 2, Math.PI / 2);
+    drawBoundaries();
     drawHover();
     drawLine(view.los, LOS_COLOR);
     drawLine(view.firstDown, game.down === 4 ? FOURTH_DOWN_COLOR : FIRST_DOWN_COLOR);
@@ -131,7 +160,7 @@ export function createField(canvas, { onPickYard }) {
     ctx.beginPath();
     ctx.rect(x0, 0, w, H);
     ctx.clip();
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
     ctx.lineWidth = 6;
     for (let d = -H; d < w + H; d += 18) {
       ctx.beginPath();
@@ -139,11 +168,18 @@ export function createField(canvas, { onPickYard }) {
       ctx.lineTo(x0 + d + H * 0.6, H);
       ctx.stroke();
     }
-    const shade = ctx.createLinearGradient(x0, 0, x0 + w, 0);
+    // Lit from the middle like the rest of the field, a touch darker at the end line.
+    const sheen = ctx.createLinearGradient(0, 0, 0, H);
+    sheen.addColorStop(0, "rgba(0,0,0,0.12)");
+    sheen.addColorStop(0.5, "rgba(255,255,255,0.14)");
+    sheen.addColorStop(1, "rgba(0,0,0,0.12)");
+    ctx.fillStyle = sheen;
+    ctx.fillRect(x0, 0, w, H);
+    const depth = ctx.createLinearGradient(x0, 0, x0 + w, 0);
     const inner = rotation < 0 ? 1 : 0;
-    shade.addColorStop(inner, "rgba(0,0,0,0)");
-    shade.addColorStop(1 - inner, "rgba(0,0,0,0.25)");
-    ctx.fillStyle = shade;
+    depth.addColorStop(inner, "rgba(0,0,0,0)");
+    depth.addColorStop(1 - inner, "rgba(0,0,0,0.16)");
+    ctx.fillStyle = depth;
     ctx.fillRect(x0, 0, w, H);
     ctx.restore();
 
@@ -151,18 +187,20 @@ export function createField(canvas, { onPickYard }) {
     ctx.save();
     ctx.translate(xOf(centerYard), H / 2);
     ctx.rotate(rotation);
-    ctx.font = `800 62px ${FONT}`;
+    ctx.font = `800 68px ${FONT}`;
     ctx.letterSpacing = "6px";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const fit = Math.min(1, (H - 48) / ctx.measureText(label).width);
     ctx.scale(fit, fit);
     ctx.lineJoin = "round";
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fillText(label, 3, 4);
-    ctx.lineWidth = 6;
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 4;
+    ctx.lineWidth = 8;
     ctx.strokeStyle = outline;
     ctx.strokeText(label, 0, 0);
+    ctx.shadowColor = "transparent";
     ctx.fillStyle = text;
     ctx.fillText(label, 0, 0);
     ctx.restore();
@@ -177,7 +215,10 @@ export function createField(canvas, { onPickYard }) {
       ctx.lineTo(xOf(y), H);
       ctx.stroke();
     }
-    // Goal lines and sidelines.
+  }
+
+  // Goal lines and sidelines, drawn over the end zones.
+  function drawBoundaries() {
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -250,23 +291,26 @@ export function createField(canvas, { onPickYard }) {
   function drawMidfieldLogo() {
     const logo = images.logo;
     if (!ready(logo)) return;
-    const w = LOGO_WIDTH_YARDS * P;
-    const h = w * (logo.naturalHeight / logo.naturalWidth);
+    const src = logoBounds ?? { x: 0, y: 0, w: logo.naturalWidth, h: logo.naturalHeight };
+    const scale = (LOGO_WIDTH_YARDS * P) / logo.naturalWidth;
+    const w = src.w * scale;
+    const h = src.h * scale;
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,0.35)";
     ctx.shadowBlur = 10;
     ctx.globalAlpha = 0.92;
-    ctx.drawImage(logo, xOf(MIDFIELD) - w / 2, H / 2 - h / 2, w, h);
+    ctx.drawImage(logo, src.x, src.y, src.w, src.h, xOf(MIDFIELD) - w / 2, H / 2 - h / 2, w, h);
     ctx.restore();
   }
 
-  // Stadium lights: bright centre, darker corners.
+  // Stadium lights on the field of play: bright centre, darker corners.
+  // (End zones are drawn afterwards so their colours stay vivid.)
   function drawLighting() {
-    const light = ctx.createRadialGradient(W / 2, H * 0.45, H * 0.2, W / 2, H / 2, W * 0.62);
+    const light = ctx.createRadialGradient(W / 2, H * 0.45, H * 0.2, W / 2, H / 2, W * 0.55);
     light.addColorStop(0, "rgba(255,255,255,0.05)");
-    light.addColorStop(1, "rgba(0,0,0,0.32)");
+    light.addColorStop(1, "rgba(0,0,0,0.3)");
     ctx.fillStyle = light;
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(xOf(LEFT_GOAL_LINE), 0, xOf(RIGHT_GOAL_LINE - LEFT_GOAL_LINE), H);
   }
 
   function drawLine(yard, color) {
