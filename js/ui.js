@@ -1,5 +1,5 @@
 // Everything outside the canvas: scoreboard, drive bar, dice, controls and banners.
-import { TEAMS, mascot, city, accentColor } from "./teams.js";
+import { TEAMS, mascot, city, accentColor, isLight } from "./teams.js";
 import { SIDES, TIMEOUTS_PER_HALF, downAndDistance, fieldPosition, periodLabel } from "./rules.js";
 import { DICE, createDie, setDie, throwDie, describeRoll } from "./dice.js";
 
@@ -36,6 +36,7 @@ function setTeamColors(node, name) {
   node.style.setProperty("--team", team.bg);
   node.style.setProperty("--team-2", team.text);
   node.style.setProperty("--accent", accentColor(name));
+  node.toggleAttribute("data-light", isLight(name));
 }
 
 // Controls-panel button that spends one of a team's timeouts.

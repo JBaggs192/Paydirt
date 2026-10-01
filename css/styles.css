@@ -209,11 +209,26 @@ kbd {
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(var(--sweep), transparent 55%, rgba(0, 0, 0, 0.45)),
-    linear-gradient(var(--sweep), color-mix(in srgb, var(--team) 82%, white), var(--team) 42%, color-mix(in srgb, var(--team) 60%, black));
-  filter: saturate(0.6) brightness(0.62);
+    linear-gradient(var(--sweep), transparent 55%, rgba(0, 0, 0, var(--vignette))),
+    linear-gradient(var(--sweep), color-mix(in srgb, var(--team) 82%, white), var(--team) 42%, color-mix(in srgb, var(--team) var(--shade), black));
+  filter: saturate(0.8) brightness(0.78);
   transition: filter 0.45s var(--ease-out);
 }
+.team {
+  --shade: 60%;
+  --vignette: 0.45;
+  --strip: rgba(0, 0, 0, 0.32);
+}
+/* Light team colors (gold etc.) get dark text and a gentler shade. */
+.team[data-light] {
+  --shade: 86%;
+  --vignette: 0.14;
+  --strip: rgba(0, 0, 0, 0.62);
+  color: #16120a;
+}
+.team[data-light] .team-city { color: rgba(0, 0, 0, 0.62); }
+.team[data-light] .team-mascot,
+.team[data-light] .score { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3); }
 .team[data-side="team1"] { --sweep: 100deg; }
 .team[data-side="team2"] { --sweep: 260deg; }
 .team.possession::before { filter: none; }
@@ -350,7 +365,7 @@ kbd {
   gap: 10px;
   height: 42px;
   padding: 0 22px 4px;
-  background: rgba(0, 0, 0, 0.32);
+  background: var(--strip);
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 .team[data-side="team2"] .team-strip { flex-direction: row-reverse; }
@@ -511,6 +526,7 @@ kbd {
   color: #fff;
   font-weight: 800;
 }
+.drive-team[data-light] { color: #16120a; }
 .drive-logo { width: 24px; height: 24px; object-fit: contain; }
 .drive-sep { color: var(--text-faint); }
 .drive-dd { color: var(--gold); font-weight: 800; }
