@@ -10,6 +10,36 @@ export const RIGHT_GOAL_LINE = TOTAL_YARDS - ENDZONE_YARDS;
 export const MIDFIELD = TOTAL_YARDS / 2;
 export const TIMEOUTS_PER_HALF = 3;
 
+export const RAZZLE_PER_GAME = 3; // house rule: Razzle Dazzle calls per team per game
+
+// Classic Paydirt play cards. Offense numbers 1-9 plus the Razzle Dazzle
+// house play; defense letters A-F.
+export const PLAYS = {
+  offense: [
+    { id: "1", name: "Line Plunge" },
+    { id: "2", name: "Off Tackle" },
+    { id: "3", name: "End Run" },
+    { id: "4", name: "Draw" },
+    { id: "5", name: "Screen Pass" },
+    { id: "6", name: "Short Pass" },
+    { id: "7", name: "Medium Pass" },
+    { id: "8", name: "Long Pass" },
+    { id: "9", name: "Sideline Pass" },
+    { id: "RD", name: "Razzle Dazzle" },
+  ],
+  defense: [
+    { id: "A", name: "Standard" },
+    { id: "B", name: "Short Yardage" },
+    { id: "C", name: "Spread" },
+    { id: "D", name: "Pass Prevent Short" },
+    { id: "E", name: "Pass Prevent Long" },
+    { id: "F", name: "Blitz" },
+  ],
+};
+export const ROLES = ["offense", "defense"];
+export const RAZZLE = "RD";
+export const playName = (role, id) => PLAYS[role]?.find(play => play.id === id)?.name ?? "";
+
 const FIRST_DOWN_YARDS = 10;
 const KICKOFF_YARD = 35;
 const START_CLOCK = 25;
@@ -36,9 +66,13 @@ export function createGame(teams = DEFAULT_TEAMS) {
     down: 1,
     period: 1, // 1-4 are quarters, 5+ overtime
     clock: START_CLOCK,
-    dice: { offense: null, defense: null },
+    dice: { offense: null, defense: null, razzleOffense: null, razzleDefense: null },
+    call: emptyCall(),
+    razzle: { team1: RAZZLE_PER_GAME, team2: RAZZLE_PER_GAME },
   };
 }
+
+const emptyCall = () => ({ offense: null, defense: null, revealed: false });
 
 // Rebuild a saved game, falling back to defaults for anything missing or stale.
 export function restoreGame(saved) {
@@ -51,7 +85,12 @@ export function restoreGame(saved) {
     score: { ...base.score, ...saved.score },
     timeouts: { ...base.timeouts, ...saved.timeouts },
     dice: { ...base.dice, ...saved.dice },
+    call: { ...base.call, ...saved.call },
+    razzle: { ...base.razzle, ...saved.razzle },
   };
+  for (const role of ROLES) {
+    if (!playName(role, game.call[role])) game.call[role] = null;
+  }
   for (const side of SIDES) {
     // null is a side still waiting for a player to pick.
     if (game.teams[side] !== null && !TEAMS[game.teams[side]]) game.teams[side] = base.teams[side];
@@ -66,7 +105,15 @@ const update = (game, mutate) => {
   return next;
 };
 
+// Every new snap starts with both play cards face down again.
+function freshCall(g) {
+  g.call = emptyCall();
+  g.dice.razzleOffense = null;
+  g.dice.razzleDefense = null;
+}
+
 function spotFirstDown(g) {
+  freshCall(g);
   g.down = 1;
   g.lineOfScrimmage = g.ballYard;
   const target = g.ballYard + direction(g.possession) * FIRST_DOWN_YARDS;
@@ -95,6 +142,7 @@ export const nextDown = game => update(game, g => {
     g.possession = other(g.possession);
     return spotFirstDown(g);
   }
+  freshCall(g);
   g.down += 1;
   g.lineOfScrimmage = g.ballYard;
 });
@@ -102,7 +150,26 @@ export const nextDown = game => update(game, g => {
 export const switchPossession = game => update(game, g => {
   g.possession = other(g.possession);
   if (g.firstDownYard !== null) spotFirstDown(g);
+  else freshCall(g); // offense and defense swapped, so the calls no longer apply
 });
+
+// A side picks (or, picking the same card again, un-picks) its play.
+export const callPlay = (game, role, id) => update(game, g => {
+  if (g.call.revealed || !playName(role, id)) return;
+  if (id === RAZZLE && g.razzle[g.possession] <= 0) return;
+  g.call[role] = g.call[role] === id ? null : id;
+});
+
+export const bothReady = g => g.call.offense !== null && g.call.defense !== null;
+
+// Flip both cards. Razzle Dazzle is only spent once it's revealed.
+export const revealCall = game => update(game, g => {
+  if (g.call.revealed || !bothReady(g)) return;
+  g.call.revealed = true;
+  if (g.call.offense === RAZZLE) g.razzle[g.possession] -= 1;
+});
+
+export const razzleActive = g => g.call.revealed && g.call.offense === RAZZLE;
 
 export const adjustClock = (game, delta) =>
   update(game, g => { g.clock = Math.max(0, Math.round((g.clock + delta) * 10) / 10); });

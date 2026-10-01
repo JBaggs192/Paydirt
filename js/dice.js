@@ -1,5 +1,5 @@
 // Paydirt dice. Offense reads the black die as tens; defense adds its two dice.
-export const DICE = {
+const SETS = {
   offense: [
     { color: "black",  faces: [1, 2, 2, 3, 3, 3] },
     { color: "yellow", faces: [0, 1, 2, 3, 4, 5] },
@@ -11,13 +11,18 @@ export const DICE = {
   ],
 };
 
+// Each set of dice on the table and which kind of dice it is. Razzle Dazzle
+// adds an extra set of offense dice for each side.
+const SET_OF = { offense: "offense", defense: "defense", razzleOffense: "offense", razzleDefense: "offense" };
+export const DICE = Object.fromEntries(Object.entries(SET_OF).map(([kind, set]) => [kind, SETS[set]]));
+
 const TOTAL = {
   offense: ([tens, a, b]) => tens * 10 + a + b,
   defense: ([a, b]) => a + b,
 };
 
 export const describeRoll = (kind, values) =>
-  kind === "offense" ? `${values[0] * 10} + ${values[1]} + ${values[2]}` : values.join(" + ");
+  SET_OF[kind] === "offense" ? `${values[0] * 10} + ${values[1]} + ${values[2]}` : values.join(" + ");
 
 function randomInt(n) {
   const [x] = crypto.getRandomValues(new Uint32Array(1));
@@ -26,7 +31,7 @@ function randomInt(n) {
 
 export function rollDice(kind) {
   const values = DICE[kind].map(die => die.faces[randomInt(die.faces.length)]);
-  return { values, total: TOTAL[kind](values) };
+  return { values, total: TOTAL[SET_OF[kind]](values) };
 }
 
 // ---- 3D cubes ----

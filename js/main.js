@@ -10,6 +10,7 @@ import { createUI } from "./ui.js";
 import { joinRoom, newCode, normalizeCode, isValidCode } from "./room.js";
 import { createLobby } from "./lobby.js";
 import { createPicker } from "./picker.js";
+import { createPlayCall } from "./playcall.js";
 
 const STORAGE_KEY = "paydirt.game";
 const SESSION_KEY = "paydirt.session";
@@ -31,6 +32,7 @@ const isHost = () => session?.role === "host";
 const isGuest = () => session?.role === "guest";
 
 const ui = createUI();
+const playcall = createPlayCall();
 const field = createField(document.getElementById("field"), {
   onPickYard: yard => run("setBall", { yard }),
 });
@@ -64,7 +66,17 @@ function save() {
 
 function render() {
   ui.render(game, { canUndo: isGuest() ? hostCanUndo : history.length > 0 });
+  playcall.render(game, myRoles());
   field.draw(game);
+}
+
+// Which play cards this screen picks: single player calls both sides; in a
+// room the host plays the left team (and the right one until someone joins)
+// and a guest plays the right team.
+function myRoles() {
+  if (!session || session.role === "solo") return new Set(rules.ROLES);
+  const sides = isHost() ? (game.teams.team2 === null ? rules.SIDES : ["team1"]) : ["team2"];
+  return new Set(sides.map(side => (side === game.possession ? "offense" : "defense")));
 }
 
 // Returns whether anything changed.
@@ -133,6 +145,20 @@ const ACTIONS = {
   switchPossession: () => commit(rules.switchPossession(game)),
   rollOffense:      () => roll("offense"),
   rollDefense:      () => roll("defense"),
+  rollRazzleOffense: () => { if (rules.razzleActive(game)) roll("razzleOffense"); },
+  rollRazzleDefense: () => { if (rules.razzleActive(game)) roll("razzleDefense"); },
+  callPlay:         ({ role, play }) => commit(rules.callPlay(game, role, play)),
+  revealCall:       () => {
+    if (!rules.bothReady(game)) return playcall.nudge(game);
+    if (!commit(rules.revealCall(game))) return;
+    const offense = game.teams[game.possession];
+    const defenseCall = rules.playName("defense", game.call.defense);
+    if (game.call.offense === rules.RAZZLE) {
+      announce("Razzle Dazzle!", { sub: `vs ${defenseCall} · roll the extra dice`, color: accentColor(offense), big: true });
+    } else {
+      announce(`${rules.playName("offense", game.call.offense)} vs ${defenseCall}`, { color: accentColor(offense) });
+    }
+  },
   score:            ({ points }) => {
     if (!commit(rules.addScore(game, game.possession, points))) return;
     const team = game.teams[game.possession];
@@ -166,6 +192,14 @@ const OPTION_CHECKS = {
   timeout:     o => SIDE(o.side) && Number.isInteger(o.index) && o.index >= 0 && o.index < rules.TIMEOUTS_PER_HALF,
   callTimeout: o => SIDE(o.side),
   setTeam:     o => SIDE(o.side) && typeof o.name === "string",
+  callPlay:    o => rules.ROLES.includes(o.role) && typeof o.play === "string",
+};
+
+const ROLL_KIND = {
+  rollOffense: "offense",
+  rollDefense: "defense",
+  rollRazzleOffense: "razzleOffense",
+  rollRazzleDefense: "razzleDefense",
 };
 
 function execute(name, options = {}) {
@@ -180,8 +214,8 @@ function run(name, options = {}) {
   if (!session || !Object.hasOwn(ACTIONS, name)) return;
   if (name === "newGame" && !confirm(NEW_GAME_PROMPT)) return;
   if (isGuest()) {
-    if (name === "rollOffense" && ui.isRolling("offense")) return;
-    if (name === "rollDefense" && ui.isRolling("defense")) return;
+    if (ROLL_KIND[name] && ui.isRolling(ROLL_KIND[name])) return;
+    if (name === "revealCall" && !rules.bothReady(game)) return playcall.nudge(game);
     link?.send({ kind: "action", name, options });
   } else {
     execute(name, options);
@@ -208,6 +242,7 @@ const KEYS = {
   o: "rollOffense",
   d: "rollDefense",
   u: "undo",
+  r: "revealCall",
 };
 const SCORE_KEYS = { 6: 6, 3: 3, 2: 2, 1: 1 };
 const REPEATABLE = new Set(["ballLeft", "ballRight", "clockUp", "clockDown"]);
@@ -217,6 +252,9 @@ function keyAction(e) {
   if (e.metaKey || e.ctrlKey) return key === "z" ? ["undo"] : null;
   if (e.altKey) return null;
   if (key === "q") return [e.shiftKey ? "periodPrev" : "periodNext"];
+  // Shift+O / Shift+D roll the Razzle Dazzle dice.
+  if (key === "o" && e.shiftKey) return ["rollRazzleOffense"];
+  if (key === "d" && e.shiftKey) return ["rollRazzleDefense"];
   // T: offense calls timeout; Shift+T: defense.
   if (key === "t") return ["callTimeout", { side: e.shiftKey ? rules.other(game.possession) : game.possession }];
   if (key in SCORE_KEYS) return ["score", { points: SCORE_KEYS[key] }];
@@ -242,8 +280,8 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", e => {
   const target = e.target.closest("[data-action]");
   if (!target) return;
-  const { action, points, side, index } = target.dataset;
-  run(action, { shift: e.shiftKey, points: Number(points), side, index: Number(index) });
+  const { action, points, side, index, role, play } = target.dataset;
+  run(action, { shift: e.shiftKey, points: Number(points), side, index: Number(index), role, play });
 });
 
 // Clicking a button shouldn't steal focus, or Space/Enter would re-press it
