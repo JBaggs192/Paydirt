@@ -177,9 +177,16 @@ kbd {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--center-w) minmax(0, 1fr);
+  border: 2px solid transparent;
   border-radius: var(--radius-lg);
-  background: #0a0f15;
-  box-shadow: var(--shadow-lg);
+  /* Brushed-metal edge inside a dark housing rim. */
+  background:
+    linear-gradient(#0a0f15, #0a0f15) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.16) 45%, rgba(255, 255, 255, 0.42)) border-box;
+  box-shadow:
+    0 0 0 6px #141a22,
+    0 0 0 7px rgba(255, 255, 255, 0.1),
+    var(--shadow-lg);
   overflow: hidden;
 }
 /* Glass sheen and hairline edge on top of everything. */
@@ -462,7 +469,11 @@ kbd {
 }
 
 @media (max-width: 720px) {
-  .scoreboard { --center-w: 92px; border-radius: 14px; }
+  .scoreboard {
+    --center-w: 92px;
+    border-radius: 14px;
+    box-shadow: 0 0 0 4px #141a22, 0 0 0 5px rgba(255, 255, 255, 0.1), var(--shadow-lg);
+  }
   .team-main { gap: 4px; padding: 8px 6px 6px; }
   .team-identity { flex: none; padding: 4px; }
   .team[data-side="team2"] .team-identity { padding: 4px; }

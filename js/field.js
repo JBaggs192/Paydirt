@@ -271,7 +271,7 @@ export function createField(canvas, { onPickYard }) {
   // Yard number split around its line ("2 | 0") like a real field, with the
   // little arrow pointing at the nearer goal line.
   function drawNumber(text, x, y, towardGoal, flipped) {
-    const gap = 5; // clear space either side of the yard line
+    const gap = 3.5; // clear space either side of the yard line
     const [tens, ones] = text;
     ctx.save();
     ctx.translate(x, y);
