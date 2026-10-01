@@ -112,7 +112,7 @@ export function createUI() {
   const undoButtons = $$('[data-action="undo"]');
   const rolling = Object.fromEntries(Object.keys(DICE).map(kind => [kind, false]));
   const ROLL_KEY = { offense: "O", defense: "D", razzleOffense: "⇧O", razzleDefense: "⇧D" };
-  const razzleBoxes = $$(".dice-box.razzle");
+  const razzleBoxes = $$(".pc-razzle");
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   let razzleOn = false;
 
