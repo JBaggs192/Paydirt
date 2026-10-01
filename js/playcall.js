@@ -21,8 +21,9 @@ export function createPlayCall() {
       button.type = "button";
       button.className = play.id === RAZZLE ? "pc-play razzle" : "pc-play";
       Object.assign(button.dataset, { action: "callPlay", role, play: play.id });
-      button.innerHTML = `<span class="pc-code">${play.id === RAZZLE ? "★" : play.id}</span>
-        <span class="pc-name">${play.name}</span>${play.id === RAZZLE ? '<span class="pc-left"></span>' : ""}`;
+      // Offense cards keep their play numbers; defense cards are just names.
+      const code = role === "offense" ? `<span class="pc-code">${play.id === RAZZLE ? "★" : play.id}</span>` : "";
+      button.innerHTML = `${code}<span class="pc-name">${play.name}</span>${play.id === RAZZLE ? '<span class="pc-left"></span>' : ""}`;
       row.querySelector(".pc-play-grid").append(button);
       return [play.id, button];
     });
