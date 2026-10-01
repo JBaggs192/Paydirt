@@ -1401,6 +1401,75 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
 .pc-reveal.armed:active { transform: translateY(1px) scale(0.97); }
 .playcall.revealed .pc-reveal { opacity: 0.25; }
 
+/* Razzle Dazzle dice: small trays right under the revealed cards, offense
+   under offense and defense under defense (both roll the offense set). */
+.pc-razzle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  margin-top: 12px;
+}
+.pc-razzle.arrive { animation: razzle-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1); }
+.pc-razzle.leaving { animation: razzle-out 0.45s ease-in forwards; }
+@keyframes razzle-in { from { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+@keyframes razzle-out { to { opacity: 0; transform: translateY(-6px) scale(0.96); } }
+.pc-razzle-label {
+  align-self: center;
+  color: #f9a8d4;
+  font: 800 11px/1.3 var(--font-display);
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.razzle-roll {
+  min-width: 0;
+  padding: 10px 12px 8px;
+  border: 1px solid rgba(236, 72, 153, 0.5);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.2), rgba(245, 158, 11, 0.05));
+  box-shadow: 0 0 26px -10px rgba(236, 72, 153, 0.7);
+}
+.razzle-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.razzle-title {
+  color: #f9a8d4;
+  font: 800 12px/1 var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.razzle-star { color: #f59e0b; }
+.razzle-roll .roll-btn { height: 26px; font-size: 12px; }
+.dice-tray.mini {
+  gap: 14px;
+  min-height: 64px;
+  padding: 14px 8px 12px;
+  border-radius: 10px;
+  background:
+    radial-gradient(120% 90% at 50% 20%, rgba(255, 255, 255, 0.09), transparent 60%),
+    linear-gradient(180deg, #4c1d95, #2a0f5c);
+}
+.dice-tray.mini .die { --s: 32px; }
+.dice-tray.mini .die-face { border-radius: 18%; }
+.razzle-roll .dice-total { min-height: 0; margin-top: 6px; }
+.razzle-roll .dice-math { font-size: 12px; }
+.razzle-roll .dice-value { font-size: 28px; }
+
+@media (max-width: 720px) {
+  .pc-razzle { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .pc-razzle-label { display: none; }
+  .razzle-roll { padding: 8px 8px 6px; }
+  .razzle-head { flex-wrap: wrap; gap: 4px; }
+  .razzle-roll .roll-btn kbd { display: none; }
+  .dice-tray.mini { gap: 10px; }
+  .dice-tray.mini .die { --s: 26px; }
+}
+
 /* Play cards to choose from */
 .pc-picks { margin-top: 16px; }
 .pc-picks + .pc-picks { margin-top: 14px; }
@@ -1756,24 +1825,6 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Razzle Dazzle dice: pop in on reveal, fade out at the next snap */
-.dice-box.razzle {
-  border-color: rgba(236, 72, 153, 0.55);
-  background: linear-gradient(180deg, rgba(168, 85, 247, 0.18), rgba(245, 158, 11, 0.05)), var(--surface);
-  box-shadow: var(--shadow-lg), 0 0 34px -10px rgba(236, 72, 153, 0.6);
-}
-.dice-box.razzle .ctl-title { color: #f9a8d4; }
-.razzle-star { color: #f59e0b; }
-.dice-box.razzle .dice-tray {
-  background:
-    radial-gradient(120% 90% at 50% 20%, rgba(255, 255, 255, 0.09), transparent 60%),
-    linear-gradient(180deg, #4c1d95, #2a0f5c);
-}
-.dice-box.arrive { animation: razzle-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1); }
-.dice-box.leaving { animation: razzle-out 0.45s ease-in forwards; }
-@keyframes razzle-in { from { opacity: 0; transform: translateY(-14px) scale(0.92); } }
-@keyframes razzle-out { to { opacity: 0; transform: scale(0.94); } }
-
 /* 3D die: six faces on a cube, plus three inner planes that fill the rounded corners. */
 .die {
   --s: 58px;
@@ -1843,7 +1894,7 @@ body[data-mode="solo"] .solo-only { display: inline-flex; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
   .score.bump, .dice-value.pop, .flash, .team-card, .matchup-rays, .picker .lock-btn,
   .matchup-unknown, .team-logo-open, .matchup-side.swap *, .pc-reveal.armed,
-  .pc-slot[data-state="waiting"] .pc-status, .pc-slot.razzle .pc-back, .dice-box.arrive { animation: none !important; }
+  .pc-slot[data-state="waiting"] .pc-status, .pc-slot.razzle .pc-back, .pc-razzle.arrive { animation: none !important; }
   .announce-card { animation-name: announce-fade; }
   @keyframes announce-fade {
     0%, 80% { opacity: 1; }

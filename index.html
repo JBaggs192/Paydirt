@@ -156,6 +156,32 @@
           </div>
         </div>
 
+        <div class="pc-razzle" hidden>
+          <div class="razzle-roll" data-kind="razzleOffense">
+            <div class="razzle-head">
+              <span class="razzle-title"><span class="razzle-star" aria-hidden="true">★</span> Offense</span>
+              <button type="button" class="roll-btn" data-action="rollRazzleOffense">Roll <kbd>⇧O</kbd></button>
+            </div>
+            <button type="button" class="dice-tray mini" data-dice="razzleOffense" data-action="rollRazzleOffense" aria-label="Roll offense Razzle Dazzle dice"></button>
+            <div class="dice-total">
+              <span class="dice-math" data-math="razzleOffense"></span>
+              <span class="dice-value" data-total="razzleOffense">—</span>
+            </div>
+          </div>
+          <span class="pc-razzle-label">Razzle Dazzle dice</span>
+          <div class="razzle-roll" data-kind="razzleDefense">
+            <div class="razzle-head">
+              <span class="razzle-title"><span class="razzle-star" aria-hidden="true">★</span> Defense</span>
+              <button type="button" class="roll-btn" data-action="rollRazzleDefense">Roll <kbd>⇧D</kbd></button>
+            </div>
+            <button type="button" class="dice-tray mini" data-dice="razzleDefense" data-action="rollRazzleDefense" aria-label="Roll defense Razzle Dazzle dice"></button>
+            <div class="dice-total">
+              <span class="dice-math" data-math="razzleDefense"></span>
+              <span class="dice-value" data-total="razzleDefense">—</span>
+            </div>
+          </div>
+        </div>
+
         <div class="pc-picks" data-role="offense" hidden>
           <h3 class="ctl-title">Your offense call</h3>
           <div class="pc-play-grid"></div>
@@ -243,17 +269,6 @@
           <span class="dice-value" data-total="offense">—</span>
         </div>
       </section>
-      <section class="panel dice-box razzle" data-kind="razzleOffense" hidden>
-        <div class="dice-head">
-          <h2 class="ctl-title"><span class="razzle-star" aria-hidden="true">★</span> Razzle Dazzle · Offense</h2>
-          <button type="button" class="roll-btn" data-action="rollRazzleOffense">Roll <kbd>⇧O</kbd></button>
-        </div>
-        <button type="button" class="dice-tray" data-dice="razzleOffense" data-action="rollRazzleOffense" aria-label="Roll offense Razzle Dazzle dice"></button>
-        <div class="dice-total">
-          <span class="dice-math" data-math="razzleOffense"></span>
-          <span class="dice-value" data-total="razzleOffense">—</span>
-        </div>
-      </section>
       <section class="panel dice-box" data-kind="defense">
         <div class="dice-head">
           <h2 class="ctl-title">Defense dice</h2>
@@ -263,17 +278,6 @@
         <div class="dice-total">
           <span class="dice-math" data-math="defense"></span>
           <span class="dice-value" data-total="defense">—</span>
-        </div>
-      </section>
-      <section class="panel dice-box razzle" data-kind="razzleDefense" hidden>
-        <div class="dice-head">
-          <h2 class="ctl-title"><span class="razzle-star" aria-hidden="true">★</span> Razzle Dazzle · Defense</h2>
-          <button type="button" class="roll-btn" data-action="rollRazzleDefense">Roll <kbd>⇧D</kbd></button>
-        </div>
-        <button type="button" class="dice-tray" data-dice="razzleDefense" data-action="rollRazzleDefense" aria-label="Roll defense Razzle Dazzle dice"></button>
-        <div class="dice-total">
-          <span class="dice-math" data-math="razzleDefense"></span>
-          <span class="dice-value" data-total="razzleDefense">—</span>
         </div>
       </section>
     </aside>
