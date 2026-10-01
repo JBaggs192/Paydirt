@@ -38,6 +38,14 @@ function setTeamColors(node, name) {
   node.style.setProperty("--accent", accentColor(name));
 }
 
+// Controls-panel button that spends one of a team's timeouts.
+function callButton(side) {
+  const button = $(`.timeout-btn[data-side="${side}"]`);
+  const pips = Array.from({ length: TIMEOUTS_PER_HALF }, () => el("i", ""));
+  $(".timeout-btn-pips", button).append(...pips);
+  return { button, pips, team: $(".timeout-btn-team", button), key: $("kbd", button) };
+}
+
 export function createUI() {
   const teams = Object.fromEntries(SIDES.map(side => {
     const root = $(`.team[data-side="${side}"]`);
@@ -59,6 +67,7 @@ export function createUI() {
       mascot: $(".team-mascot", root),
       score: $(".score", root),
       down: $(".team-down", root),
+      call: callButton(side),
       lastScore: null,
     }];
   }));
@@ -106,6 +115,8 @@ export function createUI() {
       t.mascot.textContent = mascot(name);
       fitText(t.mascot, 16);
       setTeamColors(t.root, name);
+      setTeamColors(t.call.button, name);
+      t.call.team.textContent = mascot(name);
     }
     t.select.value = name;
     t.root.classList.toggle("possession", game.possession === side);
@@ -118,6 +129,12 @@ export function createUI() {
 
     const { down, distance } = downAndDistance(game);
     t.down.textContent = `${down} & ${distance}`;
+
+    const left = game.timeouts[side];
+    t.call.button.disabled = left === 0;
+    t.call.button.title = left === 0 ? "No timeouts left" : `${left} left`;
+    t.call.pips.forEach((pip, i) => pip.classList.toggle("used", i >= left));
+    t.call.key.textContent = game.possession === side ? "T" : "⇧T";
 
     t.dots.forEach((dot, i) => {
       const used = i >= game.timeouts[side];
@@ -194,10 +211,12 @@ export function createUI() {
     },
 
     // Light up the on-screen button for a keyboard shortcut.
-    flash(action, points) {
-      const selector = points ? `[data-action="${action}"][data-points="${points}"]` : `[data-action="${action}"]`;
+    flash(action, { points, side } = {}) {
+      let selector = `[data-action="${action}"]`;
+      if (points) selector += `[data-points="${points}"]`;
+      if (side) selector += `[data-side="${side}"]`;
       $$(selector).forEach(button => {
-        if (button.matches(".action, .keycap, .score-btn, .roll-btn, .ghost-btn")) replay(button, "flash");
+        if (button.matches(".action, .keycap, .score-btn, .roll-btn, .ghost-btn, .timeout-btn")) replay(button, "flash");
       });
     },
   };
