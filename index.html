@@ -31,11 +31,20 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button type="button" class="ghost-btn" data-action="undo" aria-label="Undo" disabled>
+        <div class="session-chip" id="session-chip" hidden>
+          <span class="session-dot" aria-hidden="true"></span>
+          <span class="session-label" id="session-label">Hoser code:</span>
+          <button type="button" class="session-code" id="session-code" title="Copy invite link"></button>
+          <span class="session-status" id="session-status" aria-live="polite"></span>
+          <button type="button" class="session-leave" data-session="leave" aria-label="Leave game" title="Leave game">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <button type="button" class="ghost-btn host-only" data-action="undo" aria-label="Undo" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="btn-label">Undo</span> <kbd>U</kbd>
         </button>
-        <button type="button" class="ghost-btn" data-action="newGame">New game</button>
+        <button type="button" class="ghost-btn host-only" data-action="newGame">New game</button>
       </div>
     </header>
 
@@ -165,6 +174,16 @@
       </section>
     </aside>
 
+    <aside class="panel watch-panel" aria-label="Watching">
+      <h2 class="ctl-title">Watching live</h2>
+      <p class="watch-text">The host is running the board. Every play, roll and score shows up here as it happens.</p>
+      <div class="watch-code-row">
+        <span class="ctl-title">Hoser code</span>
+        <strong class="watch-code" id="watch-code"></strong>
+      </div>
+      <button type="button" class="action" data-session="leave"><span>Leave game</span></button>
+    </aside>
+
     <aside class="dice-panel" aria-label="Dice">
       <section class="panel dice-box" data-kind="offense">
         <div class="dice-head">
@@ -190,6 +209,27 @@
       </section>
     </aside>
 
+  </div>
+
+  <div class="lobby" id="lobby" hidden>
+    <div class="lobby-card" role="dialog" aria-modal="true" aria-labelledby="lobby-title">
+      <img class="lobby-logo" src="BFL_logo.png" alt="" width="96" height="96">
+      <h1 class="lobby-title" id="lobby-title">Baggaley Football League</h1>
+      <p class="lobby-sub">Paydirt · Tabletop Football</p>
+
+      <button type="button" class="action primary lobby-host" id="lobby-host"><span>Host Game</span></button>
+
+      <div class="lobby-or"><span>or</span></div>
+
+      <form class="lobby-join" id="lobby-join" novalidate>
+        <label class="ctl-title" for="lobby-code">Enter Hoser Code</label>
+        <div class="lobby-join-row">
+          <input class="lobby-code" id="lobby-code" size="6" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="lobby-error">
+          <button type="submit" class="action lobby-join-btn"><span>Join</span></button>
+        </div>
+        <p class="lobby-error" id="lobby-error" role="alert"></p>
+      </form>
+    </div>
   </div>
 </body>
 </html>
