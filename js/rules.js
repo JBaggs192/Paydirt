@@ -53,7 +53,8 @@ export function restoreGame(saved) {
     dice: { ...base.dice, ...saved.dice },
   };
   for (const side of SIDES) {
-    if (!TEAMS[game.teams[side]]) game.teams[side] = base.teams[side];
+    // null is a side still waiting for a player to pick.
+    if (game.teams[side] !== null && !TEAMS[game.teams[side]]) game.teams[side] = base.teams[side];
   }
   if (!SIDES.includes(game.possession)) game.possession = base.possession;
   return game;

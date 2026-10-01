@@ -1,5 +1,5 @@
 // Everything outside the canvas: scoreboard, drive bar, dice, controls and banners.
-import { TEAMS, mascot, city, accentColor, isLight } from "./teams.js";
+import { TEAMS, teamData, mascot, city, accentColor, isLight } from "./teams.js";
 import { SIDES, TIMEOUTS_PER_HALF, downAndDistance, fieldPosition, periodLabel } from "./rules.js";
 import { DICE, createDie, setDie, throwDie, describeRoll } from "./dice.js";
 
@@ -32,7 +32,7 @@ function replay(node, className) {
 }
 
 function setTeamColors(node, name) {
-  const team = TEAMS[name];
+  const team = teamData(name);
   node.style.setProperty("--team", team.bg);
   node.style.setProperty("--team-2", team.text);
   node.style.setProperty("--accent", accentColor(name));
@@ -40,6 +40,12 @@ function setTeamColors(node, name) {
 }
 
 // Controls-panel button that spends one of a team's timeouts.
+// Show a team logo, or nothing for a side that hasn't been picked yet.
+function setLogo(img, name) {
+  if (name) img.src = teamData(name).logo;
+  else img.removeAttribute("src");
+}
+
 function callButton(side) {
   const button = $(`.timeout-btn[data-side="${side}"]`);
   const pips = Array.from({ length: TIMEOUTS_PER_HALF }, () => el("i", ""));
@@ -59,7 +65,9 @@ export function createUI() {
     $(".timeouts", root).append(...dots);
 
     const select = $(".team-select", root);
-    select.append(...Object.keys(TEAMS).map(name => new Option(name, name)));
+    const placeholder = new Option("Choose a team…", "");
+    placeholder.disabled = true;
+    select.append(placeholder, ...Object.keys(TEAMS).map(name => new Option(name, name)));
 
     return [side, {
       root, dots, select,
@@ -89,7 +97,7 @@ export function createUI() {
     const spot = el("span", "drive-spot");
     const dd = el("span", "drive-dd");
     bar.append(chip, spot, el("span", "drive-sep", "•"), dd);
-    return { chip, logo, offense, spot, dd, team: null };
+    return { chip, logo, offense, spot, dd, team: undefined };
   })();
 
   // Names re-fit whenever the scoreboard changes width.
@@ -108,10 +116,11 @@ export function createUI() {
     const t = teams[side];
     const name = game.teams[side];
 
-    if (t.root.dataset.team !== name) {
-      t.root.dataset.team = name;
-      t.logo.src = TEAMS[name].logo;
-      t.logo.alt = name;
+    if (t.root.dataset.team !== (name ?? "")) {
+      t.root.dataset.team = name ?? "";
+      t.root.toggleAttribute("data-open", !name);
+      setLogo(t.logo, name);
+      t.logo.alt = name ?? "";
       t.city.textContent = city(name);
       t.mascot.textContent = mascot(name);
       fitText(t.mascot, 16);
@@ -119,7 +128,7 @@ export function createUI() {
       setTeamColors(t.call.button, name);
       t.call.team.textContent = mascot(name);
     }
-    t.select.value = name;
+    t.select.value = name ?? "";
     t.root.classList.toggle("possession", game.possession === side);
 
     const score = game.score[side];
@@ -149,7 +158,7 @@ export function createUI() {
     const name = game.teams[game.possession];
     if (drive.team !== name) {
       drive.team = name;
-      drive.logo.src = TEAMS[name].logo;
+      setLogo(drive.logo, name);
       setTeamColors(drive.chip, name);
     }
     drive.offense.textContent = `${mascot(name)} ball`;

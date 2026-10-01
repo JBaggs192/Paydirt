@@ -1,6 +1,7 @@
 // Wires input to the rules: every change goes through commit(), which keeps
-// undo history, saves to localStorage, re-renders and (when hosting) sends the
-// game to everyone watching.
+// undo history, saves to localStorage, re-renders and sends the game to the
+// room. The host's browser owns the game; a guest's input is sent to the host
+// to run, so both players share one board.
 import * as rules from "./rules.js";
 import { accentColor, mascot } from "./teams.js";
 import { DICE, rollDice } from "./dice.js";
@@ -8,32 +9,41 @@ import { createField } from "./field.js";
 import { createUI } from "./ui.js";
 import { joinRoom, newCode, normalizeCode, isValidCode } from "./room.js";
 import { createLobby } from "./lobby.js";
+import { createPicker } from "./picker.js";
 
 const STORAGE_KEY = "paydirt.game";
 const SESSION_KEY = "paydirt.session";
 const PUBLISH_MS = 120; // batch rapid changes (ball drags) into one update
 const HISTORY_LIMIT = 100;
 const COALESCE_MS = 1000; // rapid ball/clock nudges collapse into one undo step
+const NEW_GAME_PROMPT = "Start a new game? Scores, downs, timeouts and the clock reset; teams stay.";
 
 let game = load();
 let lastCommit = { key: null, at: 0 };
 const history = [];
 
-let session = null; // { role: "host" | "viewer", code }
+let session = null; // { role: "solo" } or { role: "host" | "guest", code }
 let link = null;    // open room connection
 let publishTimer = 0;
 let waitingForHost = false;
-const isViewer = () => session?.role === "viewer";
+let hostCanUndo = false; // guests: whether the host has anything to undo
 const isHost = () => session?.role === "host";
+const isGuest = () => session?.role === "guest";
 
 const ui = createUI();
 const field = createField(document.getElementById("field"), {
-  onPickYard: yard => { if (!isViewer()) commit(rules.setBall(game, yard), "ball"); },
+  onPickYard: yard => run("setBall", { yard }),
 });
 const lobby = createLobby({
-  onHost: () => startSession("host", newCode()),
-  onJoin: code => startSession("viewer", code),
-  onLeave: leaveSession,
+  onSolo: startSolo,
+  onHost: () => picker.open({ mode: "host" }),
+  onJoin: joinAsGuest,
+  onLeave: () => leaveSession(),
+});
+const picker = createPicker({
+  onLock: team => (isGuest() ? run("setTeam", { side: "team2", name: team }) : hostWith(team)),
+  onBack: () => (session ? leaveSession({ ask: false, step: "multi" }) : lobby.show({ step: "multi" })),
+  onSkip: () => {},
 });
 
 function load() {
@@ -53,7 +63,7 @@ function save() {
 }
 
 function render() {
-  ui.render(game, { canUndo: history.length > 0 });
+  ui.render(game, { canUndo: isGuest() ? hostCanUndo : history.length > 0 });
   field.draw(game);
 }
 
@@ -86,11 +96,6 @@ function undo() {
 
 function roll(kind) {
   if (ui.isRolling(kind)) return;
-  // Viewers ask the host to roll, so everyone sees the same dice.
-  if (isViewer()) {
-    link?.send({ kind: "rollRequest", dice: kind });
-    return;
-  }
   const result = rollDice(kind);
   send({ kind: "roll", dice: kind, result });
   ui.animateRoll(kind, result).then(render);
@@ -105,6 +110,7 @@ function announce(text, options) {
 const ACTIONS = {
   ballLeft:         ({ shift }) => commit(rules.moveBall(game, shift ? -10 : -1), "ball"),
   ballRight:        ({ shift }) => commit(rules.moveBall(game, shift ? 10 : 1), "ball"),
+  setBall:          ({ yard }) => commit(rules.setBall(game, yard), "ball"),
   clockUp:          ({ shift }) => commit(rules.adjustClock(game, shift ? 5 : 0.5), "clock"),
   clockDown:        ({ shift }) => commit(rules.adjustClock(game, shift ? -5 : -0.5), "clock"),
   periodNext:       () => {
@@ -132,19 +138,55 @@ const ACTIONS = {
     const team = game.teams[game.possession];
     announce(SCORE_CALLS[points], { sub: mascot(team), color: accentColor(team), big: points >= 3 });
   },
+  setScore:         ({ side, value }) => commit(rules.setScore(game, side, value), `score-${side}`),
   // Scoreboard bars toggle; the Timeouts buttons only ever spend one.
   timeout:          ({ side, index }) => {
     const before = game.timeouts[side];
     if (commit(rules.toggleTimeout(game, side, index)) && game.timeouts[side] < before) announceTimeout(side);
   },
   callTimeout:      ({ side }) => { if (commit(rules.callTimeout(game, side))) announceTimeout(side); },
-  undo,
-  newGame: () => {
-    if (confirm("Start a new game? Scores, downs, timeouts and the clock reset; teams stay.")) {
-      commit(rules.newGame(game));
-    }
+  setTeam:          ({ side, name }) => {
+    if (name === game.teams[rules.other(side)]) return; // a team can only play one side
+    const filledSlot = game.teams[side] === null;
+    if (!commit(rules.setTeam(game, side, name)) || !filledSlot) return;
+    const { team1, team2 } = game.teams;
+    if (team1 && team2) announce("Game on", { sub: `${mascot(team1)} vs ${mascot(team2)}`, big: true });
   },
+  undo,
+  newGame:          () => commit(rules.newGame(game)),
 };
+
+// Options an action needs, checked before running anything (guests' input
+// arrives over the network).
+const SIDE = side => rules.SIDES.includes(side);
+const OPTION_CHECKS = {
+  setBall:     o => Number.isFinite(o.yard),
+  score:       o => o.points in SCORE_CALLS,
+  setScore:    o => SIDE(o.side) && Number.isFinite(Number(o.value)),
+  timeout:     o => SIDE(o.side) && Number.isInteger(o.index) && o.index >= 0 && o.index < rules.TIMEOUTS_PER_HALF,
+  callTimeout: o => SIDE(o.side),
+  setTeam:     o => SIDE(o.side) && typeof o.name === "string",
+};
+
+function execute(name, options = {}) {
+  if (!Object.hasOwn(ACTIONS, name)) return;
+  const checked = { ...options, shift: Boolean(options.shift) };
+  if (OPTION_CHECKS[name] && !OPTION_CHECKS[name](checked)) return;
+  ACTIONS[name](checked);
+}
+
+// Run an action here, or (as a guest) ask the host to run it.
+function run(name, options = {}) {
+  if (!session || !Object.hasOwn(ACTIONS, name)) return;
+  if (name === "newGame" && !confirm(NEW_GAME_PROMPT)) return;
+  if (isGuest()) {
+    if (name === "rollOffense" && ui.isRolling("offense")) return;
+    if (name === "rollDefense" && ui.isRolling("defense")) return;
+    link?.send({ kind: "action", name, options });
+  } else {
+    execute(name, options);
+  }
+}
 
 function announceTimeout(side) {
   const team = game.teams[side];
@@ -181,12 +223,8 @@ function keyAction(e) {
   return KEYS[key] ? [KEYS[key]] : null;
 }
 
-// The only things a viewer can do.
-const VIEWER_ACTIONS = new Set(["rollOffense", "rollDefense"]);
-const allowed = name => session && (!isViewer() || VIEWER_ACTIONS.has(name));
-
 document.addEventListener("keydown", e => {
-  if (!session) return;
+  if (!session || picker.isOpen) return;
   const target = e.target instanceof Element ? e.target : document.body;
   if (target.closest("input, select, textarea")) return;
   // A keyboard-focused button should still activate normally.
@@ -196,16 +234,16 @@ document.addEventListener("keydown", e => {
   if (!match) return;
   e.preventDefault();
   const [name, options = {}] = match;
-  if (!allowed(name) || (e.repeat && !REPEATABLE.has(name))) return;
-  ACTIONS[name]({ shift: e.shiftKey, ...options });
+  if (e.repeat && !REPEATABLE.has(name)) return;
+  run(name, { shift: e.shiftKey, ...options });
   ui.flash(name, options);
 });
 
 document.addEventListener("click", e => {
   const target = e.target.closest("[data-action]");
-  if (!target || !allowed(target.dataset.action)) return;
+  if (!target) return;
   const { action, points, side, index } = target.dataset;
-  ACTIONS[action]({ shift: e.shiftKey, points: Number(points), side, index: Number(index) });
+  run(action, { shift: e.shiftKey, points: Number(points), side, index: Number(index) });
 });
 
 // Clicking a button shouldn't steal focus, or Space/Enter would re-press it
@@ -216,22 +254,21 @@ document.addEventListener("mousedown", e => {
 
 for (const side of rules.SIDES) {
   const score = document.querySelector(`.team[data-side="${side}"] .score`);
-  score.addEventListener("input", () => {
-    if (!isViewer()) commit(rules.setScore(game, side, score.value), `score-${side}`);
-  });
+  score.addEventListener("input", () => run("setScore", { side, value: score.value }));
   score.addEventListener("blur", render);
   score.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === "Escape") score.blur(); });
 
   const select = document.querySelector(`.team[data-side="${side}"] .team-select`);
   select.addEventListener("change", () => {
-    if (!isViewer()) commit(rules.setTeam(game, side, select.value));
+    run("setTeam", { side, name: select.value });
     select.blur();
+    render(); // snap back if the pick was refused
   });
 }
 
 // ---- Rooms ----
 
-// Host only: share something with everyone watching.
+// Host only: share something with everyone in the room.
 function send(data) {
   if (isHost()) link?.send(data);
 }
@@ -241,7 +278,7 @@ function publish(now = false) {
   if (!isHost() || !link) return;
   const flush = () => {
     publishTimer = 0;
-    link?.send({ kind: "state", game });
+    link?.send({ kind: "state", game, canUndo: history.length > 0 });
   };
   if (now) {
     clearTimeout(publishTimer);
@@ -259,16 +296,18 @@ function onRoomMessage(data, fromHost) {
   if (!data || typeof data !== "object") return;
   if (isHost()) {
     if (data.kind === "hello") publish(true); // someone joined: catch them up
-    else if (data.kind === "rollRequest" && (data.dice === "offense" || data.dice === "defense")) roll(data.dice);
+    else if (data.kind === "action" && typeof data.name === "string") execute(data.name, data.options ?? {});
     return;
   }
   if (!fromHost) return;
   if (data.kind === "state") {
     game = rules.restoreGame(data.game);
+    hostCanUndo = Boolean(data.canUndo);
     if (waitingForHost) {
       waitingForHost = false;
       lobby.setStatus("live");
     }
+    picker.setRival(game.teams.team1, { canSkip: game.teams.team2 !== null });
     render();
   } else if (data.kind === "roll" && validRoll(data.dice, data.result) && !ui.isRolling(data.dice)) {
     ui.animateRoll(data.dice, data.result).then(render);
@@ -290,25 +329,32 @@ function onRoomStatus(status, message) {
   lobby.setStatus(status, message);
 }
 
-function setReadOnly(readOnly) {
-  document.body.classList.toggle("viewing", readOnly);
-  document.querySelectorAll(".score").forEach(input => { input.readOnly = readOnly; });
-  document.querySelectorAll(".team-select").forEach(select => { select.disabled = readOnly; });
+function remember(current) {
+  session = current;
+  document.body.dataset.mode = current.role;
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(current));
+  } catch {
+    // Without session storage a refresh just returns to the menu.
+  }
+}
+
+// Single player: your own saved game, no room.
+function startSolo() {
+  remember({ role: "solo" });
+  lobby.setSession(session);
+  lobby.hide();
+  render();
 }
 
 function startSession(role, code) {
-  session = { role, code };
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  } catch {
-    // Without session storage a refresh just returns to the lobby.
-  }
-  setReadOnly(role === "viewer");
-  if (role === "viewer") {
-    // Show a blank board until the host's game arrives; don't touch our own save.
+  remember({ role, code });
+  if (role === "guest") {
+    // An empty board until the host's game arrives; our own save stays untouched.
     history.length = 0;
-    game = rules.createGame();
+    game = rules.createGame({ team1: null, team2: null });
     waitingForHost = true;
+    hostCanUndo = false;
     render();
   }
   lobby.setSession(session);
@@ -317,29 +363,41 @@ function startSession(role, code) {
   link = joinRoom(code, role, { onMessage: onRoomMessage, onStatus: onRoomStatus });
 }
 
-function leaveSession() {
+// The host's pick starts a fresh game (undoable) with the other side open.
+function hostWith(team) {
+  commit(rules.createGame({ team1: team, team2: null }));
+  startSession("host", newCode());
+}
+
+function joinAsGuest(code) {
+  startSession("guest", code);
+  picker.open({ mode: "guest", code });
+}
+
+function leaveSession({ ask = true, step = "main" } = {}) {
   if (isHost()) {
-    if (!confirm("Stop hosting? Anyone watching will be disconnected.")) return;
+    if (ask && !confirm("Stop hosting? Anyone in the room will be disconnected.")) return;
     send({ kind: "end" });
   }
-  const wasViewer = isViewer();
+  const wasGuest = isGuest();
   clearTimeout(publishTimer);
   publishTimer = 0;
   link?.close();
   link = null;
   session = null;
+  delete document.body.dataset.mode;
   waitingForHost = false;
   try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
-  setReadOnly(false);
-  if (wasViewer) {
+  if (wasGuest) {
     game = load();
     render();
   }
-  lobby.show();
+  picker.close();
+  lobby.show({ step });
 }
 
-// Start: an invite link (?code=) joins that room, a refresh rejoins the room
-// this tab was in, otherwise show the lobby.
+// Start: an invite link (?code=) joins that room, a refresh returns to
+// whatever this tab was doing, otherwise show the menu.
 render();
 const params = new URLSearchParams(location.search);
 const invited = normalizeCode(params.get("code") || "");
@@ -347,6 +405,8 @@ if (params.has("code")) window.history.replaceState(null, "", location.pathname)
 let resumed = null;
 try { resumed = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { /* ignore */ }
 
-if (isValidCode(invited)) startSession("viewer", invited);
-else if (["host", "viewer"].includes(resumed?.role) && isValidCode(resumed.code)) startSession(resumed.role, resumed.code);
+if (isValidCode(invited)) joinAsGuest(invited);
+else if (resumed?.role === "solo") startSolo();
+else if (resumed?.role === "host" && isValidCode(resumed.code)) startSession("host", resumed.code);
+else if (["guest", "viewer"].includes(resumed?.role) && isValidCode(resumed.code)) startSession("guest", resumed.code);
 else lobby.show();

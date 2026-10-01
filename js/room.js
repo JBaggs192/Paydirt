@@ -40,6 +40,7 @@ function pubsubRoom(code, role, { onMessage, onStatus }) {
   let closed = false;
   let attempt = 0;
   let retryTimer = 0;
+  const outbox = []; // sent while disconnected; delivered once we're back
 
   const retry = () => {
     if (closed) return;
@@ -69,6 +70,7 @@ function pubsubRoom(code, role, { onMessage, onStatus }) {
       if (msg.type === "system" && msg.event === "connected") {
         live = true;
         attempt = 0;
+        outbox.splice(0).forEach(transmit);
         onStatus("live");
       } else if (msg.type === "ack" && !msg.success) {
         onStatus("error", "Couldn't join the room");
@@ -85,11 +87,14 @@ function pubsubRoom(code, role, { onMessage, onStatus }) {
     };
   }
 
+  const transmit = data =>
+    socket.send(JSON.stringify({ type: "sendToGroup", group, dataType: "json", data, noEcho: true }));
+
   queueMicrotask(connect);
   return {
     send(data) {
-      if (!live) return; // the host re-sends the full game on reconnect
-      socket.send(JSON.stringify({ type: "sendToGroup", group, dataType: "json", data, noEcho: true }));
+      if (live) transmit(data);
+      else if (outbox.push(data) > 50) outbox.shift();
     },
     close() {
       closed = true;

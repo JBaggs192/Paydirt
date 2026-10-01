@@ -40,6 +40,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
           </button>
         </div>
+        <button type="button" class="ghost-btn solo-only" data-session="leave">Menu</button>
         <button type="button" class="ghost-btn host-only" data-action="undo" aria-label="Undo" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="btn-label">Undo</span> <kbd>U</kbd>
@@ -53,6 +54,7 @@
         <div class="team-main">
           <div class="team-identity" title="Change team">
             <img class="team-logo" alt="">
+            <span class="team-logo-open" aria-hidden="true">?</span>
             <div class="team-name">
               <span class="team-city"></span>
               <span class="team-mascot"></span>
@@ -84,6 +86,7 @@
         <div class="team-main">
           <div class="team-identity" title="Change team">
             <img class="team-logo" alt="">
+            <span class="team-logo-open" aria-hidden="true">?</span>
             <div class="team-name">
               <span class="team-city"></span>
               <span class="team-mascot"></span>
@@ -174,16 +177,6 @@
       </section>
     </aside>
 
-    <aside class="panel watch-panel" aria-label="Watching">
-      <h2 class="ctl-title">Watching live</h2>
-      <p class="watch-text">The host is running the board and every play shows up here live. You can still roll the dice: tap them or press <kbd>O</kbd> / <kbd>D</kbd>.</p>
-      <div class="watch-code-row">
-        <span class="ctl-title">Hoser code</span>
-        <strong class="watch-code" id="watch-code"></strong>
-      </div>
-      <button type="button" class="action" data-session="leave"><span>Leave game</span></button>
-    </aside>
-
     <aside class="dice-panel" aria-label="Dice">
       <section class="panel dice-box" data-kind="offense">
         <div class="dice-head">
@@ -211,24 +204,71 @@
 
   </div>
 
+  <div class="picker" id="picker" hidden>
+    <div class="picker-inner">
+      <header class="picker-head">
+        <button type="button" class="ghost-btn" id="picker-back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+        <div class="picker-heading">
+          <p class="picker-kicker" id="picker-kicker"></p>
+          <h1 class="picker-title">Pick your team</h1>
+        </div>
+      </header>
+
+      <section class="matchup" aria-live="polite">
+        <div class="matchup-side" data-slot="left"></div>
+        <div class="matchup-vs">VS</div>
+        <div class="matchup-side" data-slot="right"></div>
+        <div class="matchup-flash" aria-hidden="true"></div>
+      </section>
+
+      <div class="picker-actions">
+        <button type="button" class="action primary lock-btn" id="lock-btn" disabled><span>Pick a team</span></button>
+        <button type="button" class="ghost-btn" id="picker-skip" hidden>Keep current teams</button>
+      </div>
+
+      <div class="conferences" id="team-grid"></div>
+    </div>
+  </div>
+
   <div class="lobby" id="lobby" hidden>
     <div class="lobby-card" role="dialog" aria-modal="true" aria-labelledby="lobby-title">
       <img class="lobby-logo" src="BFL_logo.png" alt="" width="96" height="96">
       <h1 class="lobby-title" id="lobby-title">Baggaley Football League</h1>
       <p class="lobby-sub">Paydirt · Tabletop Football</p>
 
-      <button type="button" class="action primary lobby-host" id="lobby-host"><span>Host Game</span></button>
+      <div class="lobby-step" data-step="main">
+        <button type="button" class="lobby-choice primary" id="lobby-solo">
+          <strong>Single Player</strong>
+          <small>Run the board on your own</small>
+        </button>
+        <button type="button" class="lobby-choice" id="lobby-multi">
+          <strong>Multiplayer</strong>
+          <small>Host a game or join with a Hoser code</small>
+        </button>
+      </div>
 
-      <div class="lobby-or"><span>or</span></div>
+      <div class="lobby-step" data-step="multi" hidden>
+        <button type="button" class="action primary lobby-host" id="lobby-host"><span>Host Game</span></button>
 
-      <form class="lobby-join" id="lobby-join" novalidate>
-        <label class="ctl-title" for="lobby-code">Enter Hoser Code</label>
-        <div class="lobby-join-row">
-          <input class="lobby-code" id="lobby-code" size="6" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="lobby-error">
-          <button type="submit" class="action lobby-join-btn"><span>Join</span></button>
-        </div>
-        <p class="lobby-error" id="lobby-error" role="alert"></p>
-      </form>
+        <div class="lobby-or"><span>or</span></div>
+
+        <form class="lobby-join" id="lobby-join" novalidate>
+          <label class="ctl-title" for="lobby-code">Enter Hoser Code</label>
+          <div class="lobby-join-row">
+            <input class="lobby-code" id="lobby-code" size="6" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="lobby-error">
+            <button type="submit" class="action lobby-join-btn"><span>Join</span></button>
+          </div>
+          <p class="lobby-error" id="lobby-error" role="alert"></p>
+        </form>
+
+        <button type="button" class="lobby-back" id="lobby-back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+      </div>
     </div>
   </div>
 </body>
