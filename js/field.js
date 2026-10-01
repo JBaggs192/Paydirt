@@ -254,8 +254,7 @@ export function createField(canvas, { onPickYard }) {
   function drawNumbers() {
     ctx.save();
     ctx.font = `700 34px ${FONT}`;
-    ctx.letterSpacing = "2px";
-    ctx.textAlign = "center";
+    ctx.letterSpacing = "0px";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "rgba(255,255,255,0.9)";
     for (let n = 10; n <= 50; n += 10) {
@@ -269,15 +268,23 @@ export function createField(canvas, { onPickYard }) {
     ctx.restore();
   }
 
-  // Yard number with the little arrow pointing at the nearer goal line.
+  // Yard number split around its line ("2 | 0") like a real field, with the
+  // little arrow pointing at the nearer goal line.
   function drawNumber(text, x, y, towardGoal, flipped) {
+    const gap = 5; // clear space either side of the yard line
+    const [tens, ones] = text;
     ctx.save();
     ctx.translate(x, y);
     if (flipped) ctx.rotate(Math.PI);
+    ctx.textAlign = "right";
+    ctx.fillText(tens, -gap, 0);
+    ctx.textAlign = "left";
+    ctx.fillText(ones, gap, 0);
+
     const dir = flipped ? -towardGoal : towardGoal;
-    ctx.fillText(text, 0, 0);
     if (dir) {
-      const ax = dir * 27;
+      const digit = ctx.measureText(dir < 0 ? tens : ones).width;
+      const ax = dir * (gap + digit + 6);
       ctx.beginPath();
       ctx.moveTo(ax + dir * 7, 0);
       ctx.lineTo(ax, -5);
