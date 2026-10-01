@@ -11,7 +11,7 @@ const STATUS_TEXT = {
   ended: "Host ended the game",
 };
 
-export function createLobby({ onHost, onJoin, onLeave }) {
+export function createLobby({ onSolo, onHost, onJoin, onLeave }) {
   const lobby = $("#lobby");
   const input = $("#lobby-code");
   const error = $("#lobby-error");
@@ -23,6 +23,18 @@ export function createLobby({ onHost, onJoin, onLeave }) {
   let statusText = "";
   let copiedTimer = 0;
 
+  const steps = [...lobby.querySelectorAll(".lobby-step")];
+  const showStep = name => steps.forEach(step => { step.hidden = step.dataset.step !== name; });
+
+  $("#lobby-solo").addEventListener("click", onSolo);
+  $("#lobby-multi").addEventListener("click", () => {
+    showStep("multi");
+    $("#lobby-host").focus();
+  });
+  $("#lobby-back").addEventListener("click", () => {
+    showStep("main");
+    $("#lobby-multi").focus();
+  });
   $("#lobby-host").addEventListener("click", onHost);
   input.addEventListener("input", () => {
     input.value = normalizeCode(input.value);
@@ -54,12 +66,15 @@ export function createLobby({ onHost, onJoin, onLeave }) {
   });
 
   return {
-    show({ prefill = "", message = "" } = {}) {
+    // step "main" (Single Player / Multiplayer) or "multi" (Host / Join).
+    show({ step = "main", prefill = "", message = "" } = {}) {
       chip.hidden = true;
       lobby.hidden = false;
+      showStep(prefill || message ? "multi" : step);
       input.value = prefill;
       error.textContent = message;
-      (prefill ? input : $("#lobby-host")).focus();
+      if (prefill) input.focus();
+      else (step === "multi" ? $("#lobby-host") : $("#lobby-solo")).focus();
     },
 
     hide() {
@@ -71,8 +86,8 @@ export function createLobby({ onHost, onJoin, onLeave }) {
     },
 
     setSession(session) {
-      code = session.code;
-      chip.hidden = false;
+      code = session.code ?? "";
+      chip.hidden = session.role === "solo";
       chip.dataset.role = session.role;
       chipLabel.textContent = "Hoser code:";
       chipCode.textContent = code;

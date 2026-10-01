@@ -280,6 +280,61 @@ kbd {
   text-transform: uppercase;
 }
 .lobby .action { justify-content: center; text-align: center; }
+.lobby-step { display: flex; flex-direction: column; }
+.lobby-step[data-step="main"] { gap: 12px; }
+
+/* Big main-menu choices */
+.lobby-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 16px;
+  background: var(--fill);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), background 0.15s, border-color 0.15s, box-shadow 0.2s;
+}
+.lobby-choice strong {
+  font: 800 24px/1 var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lobby-choice small { color: var(--text-dim); font-size: 13px; }
+.lobby-choice:hover { transform: translateY(-2px); background: var(--fill-hover); border-color: var(--gold); }
+.lobby-choice:active { transform: translateY(1px); }
+.lobby-choice.primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: 0 10px 26px -10px rgba(255, 197, 49, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  color: var(--gold-ink);
+}
+.lobby-choice.primary small { color: rgba(29, 21, 3, 0.72); }
+.lobby-choice.primary:hover { background: linear-gradient(180deg, #ffe08a, var(--gold-hi)); }
+
+.lobby-back {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.lobby-back svg { width: 16px; height: 16px; }
+.lobby-back:hover { background: var(--fill); color: var(--text); }
+
+/* The Menu button only shows in single player */
+.solo-only { display: none; }
+body[data-mode="solo"] .solo-only { display: inline-flex; }
 .lobby-host { min-height: 54px; font-size: 18px; }
 .lobby-or {
   display: flex;

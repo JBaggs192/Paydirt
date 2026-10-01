@@ -22,7 +22,7 @@ let game = load();
 let lastCommit = { key: null, at: 0 };
 const history = [];
 
-let session = null; // { role: "host" | "guest", code }
+let session = null; // { role: "solo" } or { role: "host" | "guest", code }
 let link = null;    // open room connection
 let publishTimer = 0;
 let waitingForHost = false;
@@ -35,13 +35,14 @@ const field = createField(document.getElementById("field"), {
   onPickYard: yard => run("setBall", { yard }),
 });
 const lobby = createLobby({
+  onSolo: startSolo,
   onHost: () => picker.open({ mode: "host" }),
   onJoin: joinAsGuest,
   onLeave: () => leaveSession(),
 });
 const picker = createPicker({
   onLock: team => (isGuest() ? run("setTeam", { side: "team2", name: team }) : hostWith(team)),
-  onBack: () => (session ? leaveSession({ ask: false }) : lobby.show()),
+  onBack: () => (session ? leaveSession({ ask: false, step: "multi" }) : lobby.show({ step: "multi" })),
   onSkip: () => {},
 });
 
@@ -328,13 +329,26 @@ function onRoomStatus(status, message) {
   lobby.setStatus(status, message);
 }
 
-function startSession(role, code) {
-  session = { role, code };
+function remember(current) {
+  session = current;
+  document.body.dataset.mode = current.role;
   try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(current));
   } catch {
-    // Without session storage a refresh just returns to the lobby.
+    // Without session storage a refresh just returns to the menu.
   }
+}
+
+// Single player: your own saved game, no room.
+function startSolo() {
+  remember({ role: "solo" });
+  lobby.setSession(session);
+  lobby.hide();
+  render();
+}
+
+function startSession(role, code) {
+  remember({ role, code });
   if (role === "guest") {
     // An empty board until the host's game arrives; our own save stays untouched.
     history.length = 0;
@@ -360,7 +374,7 @@ function joinAsGuest(code) {
   picker.open({ mode: "guest", code });
 }
 
-function leaveSession({ ask = true } = {}) {
+function leaveSession({ ask = true, step = "main" } = {}) {
   if (isHost()) {
     if (ask && !confirm("Stop hosting? Anyone in the room will be disconnected.")) return;
     send({ kind: "end" });
@@ -371,6 +385,7 @@ function leaveSession({ ask = true } = {}) {
   link?.close();
   link = null;
   session = null;
+  delete document.body.dataset.mode;
   waitingForHost = false;
   try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
   if (wasGuest) {
@@ -378,11 +393,11 @@ function leaveSession({ ask = true } = {}) {
     render();
   }
   picker.close();
-  lobby.show();
+  lobby.show({ step });
 }
 
-// Start: an invite link (?code=) joins that room, a refresh rejoins the room
-// this tab was in, otherwise show the lobby.
+// Start: an invite link (?code=) joins that room, a refresh returns to
+// whatever this tab was doing, otherwise show the menu.
 render();
 const params = new URLSearchParams(location.search);
 const invited = normalizeCode(params.get("code") || "");
@@ -391,6 +406,7 @@ let resumed = null;
 try { resumed = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { /* ignore */ }
 
 if (isValidCode(invited)) joinAsGuest(invited);
+else if (resumed?.role === "solo") startSolo();
 else if (resumed?.role === "host" && isValidCode(resumed.code)) startSession("host", resumed.code);
 else if (["guest", "viewer"].includes(resumed?.role) && isValidCode(resumed.code)) startSession("guest", resumed.code);
 else lobby.show();

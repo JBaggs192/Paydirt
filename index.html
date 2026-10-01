@@ -40,6 +40,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
           </button>
         </div>
+        <button type="button" class="ghost-btn solo-only" data-session="leave">Menu</button>
         <button type="button" class="ghost-btn host-only" data-action="undo" aria-label="Undo" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="btn-label">Undo</span> <kbd>U</kbd>
@@ -238,18 +239,36 @@
       <h1 class="lobby-title" id="lobby-title">Baggaley Football League</h1>
       <p class="lobby-sub">Paydirt · Tabletop Football</p>
 
-      <button type="button" class="action primary lobby-host" id="lobby-host"><span>Host Game</span></button>
+      <div class="lobby-step" data-step="main">
+        <button type="button" class="lobby-choice primary" id="lobby-solo">
+          <strong>Single Player</strong>
+          <small>Run the board on your own</small>
+        </button>
+        <button type="button" class="lobby-choice" id="lobby-multi">
+          <strong>Multiplayer</strong>
+          <small>Host a game or join with a Hoser code</small>
+        </button>
+      </div>
 
-      <div class="lobby-or"><span>or</span></div>
+      <div class="lobby-step" data-step="multi" hidden>
+        <button type="button" class="action primary lobby-host" id="lobby-host"><span>Host Game</span></button>
 
-      <form class="lobby-join" id="lobby-join" novalidate>
-        <label class="ctl-title" for="lobby-code">Enter Hoser Code</label>
-        <div class="lobby-join-row">
-          <input class="lobby-code" id="lobby-code" size="6" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="lobby-error">
-          <button type="submit" class="action lobby-join-btn"><span>Join</span></button>
-        </div>
-        <p class="lobby-error" id="lobby-error" role="alert"></p>
-      </form>
+        <div class="lobby-or"><span>or</span></div>
+
+        <form class="lobby-join" id="lobby-join" novalidate>
+          <label class="ctl-title" for="lobby-code">Enter Hoser Code</label>
+          <div class="lobby-join-row">
+            <input class="lobby-code" id="lobby-code" size="6" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="lobby-error">
+            <button type="submit" class="action lobby-join-btn"><span>Join</span></button>
+          </div>
+          <p class="lobby-error" id="lobby-error" role="alert"></p>
+        </form>
+
+        <button type="button" class="lobby-back" id="lobby-back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+      </div>
     </div>
   </div>
 </body>
