@@ -19,7 +19,6 @@ export function createLobby({ onHost, onJoin, onLeave }) {
   const chipLabel = $("#session-label");
   const chipCode = $("#session-code");
   const chipStatus = $("#session-status");
-  const watchCode = $("#watch-code");
   let code = "";
   let statusText = "";
   let copiedTimer = 0;
@@ -75,9 +74,8 @@ export function createLobby({ onHost, onJoin, onLeave }) {
       code = session.code;
       chip.hidden = false;
       chip.dataset.role = session.role;
-      chipLabel.textContent = session.role === "host" ? "Hoser code:" : "Watching:";
+      chipLabel.textContent = "Hoser code:";
       chipCode.textContent = code;
-      watchCode.textContent = code;
     },
 
     setStatus(status, message = "") {

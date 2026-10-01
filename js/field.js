@@ -1,7 +1,7 @@
 // Canvas field. Drawn in a fixed 1000x400 coordinate space and scaled to the
 // element's real pixel size so it stays sharp on high-DPI screens. The ball and
 // markers glide toward their new spots instead of jumping.
-import { TEAMS, mascot, accentColor } from "./teams.js";
+import { teamData, mascot, accentColor } from "./teams.js";
 import {
   TOTAL_YARDS, ENDZONE_YARDS, LEFT_GOAL_LINE, RIGHT_GOAL_LINE, MIDFIELD, direction, positionOf,
 } from "./rules.js";
@@ -150,7 +150,7 @@ export function createField(canvas, { onPickYard }) {
   }
 
   function drawEndzone(name, centerYard, rotation) {
-    const { bg, text, outline } = TEAMS[name];
+    const { bg, text, outline } = teamData(name);
     const x0 = xOf(centerYard - ENDZONE_YARDS / 2);
     const w = ENDZONE_YARDS * P;
 

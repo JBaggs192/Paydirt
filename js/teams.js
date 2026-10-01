@@ -36,19 +36,34 @@ export const TEAMS = {
 
 export const DEFAULT_TEAMS = { team1: "Los Angeles Chargers", team2: "Kansas City Chiefs" };
 
-export const mascot = name => name.split(" ").pop().toUpperCase();
-export const city = name => name.split(" ").slice(0, -1).join(" ").toUpperCase();
+export const DIVISIONS = [
+  { name: "AFC East",  teams: ["Buffalo Bills", "Miami Dolphins", "New England Patriots", "New York Jets"] },
+  { name: "AFC North", teams: ["Baltimore Ravens", "Cincinnati Bengals", "Cleveland Browns", "Pittsburgh Steelers"] },
+  { name: "AFC South", teams: ["Houston Texans", "Indianapolis Colts", "Jacksonville Jaguars", "Tennessee Titans"] },
+  { name: "AFC West",  teams: ["Denver Broncos", "Kansas City Chiefs", "Las Vegas Raiders", "Los Angeles Chargers"] },
+  { name: "NFC East",  teams: ["Dallas Cowboys", "New York Giants", "Philadelphia Eagles", "Washington Commanders"] },
+  { name: "NFC North", teams: ["Chicago Bears", "Detroit Lions", "Green Bay Packers", "Minnesota Vikings"] },
+  { name: "NFC South", teams: ["Atlanta Falcons", "Carolina Panthers", "New Orleans Saints", "Tampa Bay Buccaneers"] },
+  { name: "NFC West",  teams: ["Arizona Cardinals", "Los Angeles Rams", "San Francisco 49ers", "Seattle Seahawks"] },
+];
+
+// Stand-in for a side nobody has picked yet (team name null).
+const OPEN_SLOT = { bg: "#27303b", text: "#8d97a3", outline: "#10151b", logo: "" };
+export const teamData = name => TEAMS[name] ?? OPEN_SLOT;
+
+export const mascot = name => (name ? name.split(" ").pop().toUpperCase() : "OPPONENT");
+export const city = name => (name ? name.split(" ").slice(0, -1).join(" ").toUpperCase() : "WAITING FOR");
 
 // Black primaries vanish on the dark board, so those teams glow in their secondary color.
 export function accentColor(name) {
-  const team = TEAMS[name];
-  if (!team) return "#FFFFFF";
+  const team = teamData(name);
+  if (team === OPEN_SLOT) return OPEN_SLOT.text;
   return team.bg.toUpperCase() === "#000000" ? team.text : team.bg;
 }
 
 // Light primaries (gold, etc.) need dark text on top of them.
 export function isLight(name) {
-  const n = parseInt(TEAMS[name].bg.slice(1), 16);
+  const n = parseInt(teamData(name).bg.slice(1), 16);
   const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map(c => {
     const v = c / 255;
     return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;

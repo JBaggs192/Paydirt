@@ -53,6 +53,7 @@
         <div class="team-main">
           <div class="team-identity" title="Change team">
             <img class="team-logo" alt="">
+            <span class="team-logo-open" aria-hidden="true">?</span>
             <div class="team-name">
               <span class="team-city"></span>
               <span class="team-mascot"></span>
@@ -84,6 +85,7 @@
         <div class="team-main">
           <div class="team-identity" title="Change team">
             <img class="team-logo" alt="">
+            <span class="team-logo-open" aria-hidden="true">?</span>
             <div class="team-name">
               <span class="team-city"></span>
               <span class="team-mascot"></span>
@@ -174,16 +176,6 @@
       </section>
     </aside>
 
-    <aside class="panel watch-panel" aria-label="Watching">
-      <h2 class="ctl-title">Watching live</h2>
-      <p class="watch-text">The host is running the board and every play shows up here live. You can still roll the dice: tap them or press <kbd>O</kbd> / <kbd>D</kbd>.</p>
-      <div class="watch-code-row">
-        <span class="ctl-title">Hoser code</span>
-        <strong class="watch-code" id="watch-code"></strong>
-      </div>
-      <button type="button" class="action" data-session="leave"><span>Leave game</span></button>
-    </aside>
-
     <aside class="dice-panel" aria-label="Dice">
       <section class="panel dice-box" data-kind="offense">
         <div class="dice-head">
@@ -209,6 +201,35 @@
       </section>
     </aside>
 
+  </div>
+
+  <div class="picker" id="picker" hidden>
+    <div class="picker-inner">
+      <header class="picker-head">
+        <button type="button" class="ghost-btn" id="picker-back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+        <div class="picker-heading">
+          <p class="picker-kicker" id="picker-kicker"></p>
+          <h1 class="picker-title">Pick your team</h1>
+        </div>
+      </header>
+
+      <section class="matchup" aria-live="polite">
+        <div class="matchup-side" data-slot="left"></div>
+        <div class="matchup-vs">VS</div>
+        <div class="matchup-side" data-slot="right"></div>
+        <div class="matchup-flash" aria-hidden="true"></div>
+      </section>
+
+      <div class="picker-actions">
+        <button type="button" class="action primary lock-btn" id="lock-btn" disabled><span>Pick a team</span></button>
+        <button type="button" class="ghost-btn" id="picker-skip" hidden>Keep current teams</button>
+      </div>
+
+      <div class="conferences" id="team-grid"></div>
+    </div>
   </div>
 
   <div class="lobby" id="lobby" hidden>

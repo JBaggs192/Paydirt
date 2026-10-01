@@ -1,4 +1,4 @@
-// GET /api/negotiate?room=ABC123&role=host|viewer
+// GET /api/negotiate?room=ABC123&role=host|guest
 // Returns a WebSocket URL for that room's group in Azure Web PubSub.
 const crypto = require("crypto");
 const { app } = require("@azure/functions");
@@ -16,7 +16,7 @@ app.http("negotiate", {
 
     const room = (request.query.get("room") || "").toUpperCase();
     if (!ROOM_CODE.test(room)) return { status: 400, jsonBody: { error: "That Hoser code doesn't look right." } };
-    const role = request.query.get("role") === "host" ? "host" : "viewer";
+    const role = request.query.get("role") === "host" ? "host" : "guest";
 
     const url = clientUrl(parseConnectionString(conn), HUB, {
       userId: `${role}-${crypto.randomUUID()}`,
